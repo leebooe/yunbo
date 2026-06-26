@@ -28,32 +28,51 @@ const filterData = posts.map((post) => ({
   <section class="container section">
     <div class="blog-controls" data-blog-controls>
       <div class="controls-head">
-        <span>快速筛选</span>
-        <small data-filter-count>{posts.length} 篇文章</small>
-      </div>
-      <div class="control-row">
-        <span>专题</span>
-        <div class="filter-pills" data-filter-group="series">
-          <button type="button" data-filter-value="all" aria-pressed="true">全部</button>
-          {topics.map((topic) => <button type="button" data-filter-value={topic.name}>{topic.name}<b>{topic.count}</b></button>)}
+        <div>
+          <span>快速筛选</span>
+          <small data-filter-count>{posts.length} 篇文章</small>
         </div>
+        <button class="filter-toggle" type="button" data-filter-toggle aria-expanded="false" aria-controls="blog-filter-panel">
+          <span data-filter-toggle-label>展开</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </button>
       </div>
-      <div class="control-row">
-        <span>标签</span>
-        <div class="filter-pills" data-filter-group="tag">
-          <button type="button" data-filter-value="all" aria-pressed="true">全部</button>
-          {tags.map((tag) => <button type="button" data-filter-value={tag.name}>{tag.name}<b>{tag.count}</b></button>)}
+      <div class="filter-panel" id="blog-filter-panel" data-filter-panel>
+        <div class="control-row">
+          <span>专题</span>
+          <div class="filter-pills" data-filter-group="series">
+            <button type="button" data-filter-value="all" aria-pressed="true">全部</button>
+            {topics.map((topic) => <button type="button" data-filter-value={topic.name}>{topic.name}<b>{topic.count}</b></button>)}
+          </div>
         </div>
-      </div>
-      <div class="control-row sort-row">
-        <label for="blog-sort">排序</label>
-        <select id="blog-sort" data-blog-sort>
-          <option value="newest">最新优先</option>
-          <option value="oldest">最早优先</option>
-          <option value="read-asc">阅读时间短</option>
-          <option value="read-desc">阅读时间长</option>
-          <option value="title">标题 A-Z</option>
-        </select>
+        <div class="control-row">
+          <span>标签</span>
+          <div class="filter-pills" data-filter-group="tag">
+            <button type="button" data-filter-value="all" aria-pressed="true">全部</button>
+            {tags.map((tag) => <button type="button" data-filter-value={tag.name}>{tag.name}<b>{tag.count}</b></button>)}
+          </div>
+        </div>
+        <div class="control-row sort-row">
+          <label for="blog-sort">排序</label>
+          <div class="sort-controls">
+            <div class="sort-pills" data-sort-pills aria-label="排序方式">
+              <button type="button" data-sort-value="newest" aria-pressed="true">最新</button>
+              <button type="button" data-sort-value="oldest">最早</button>
+              <button type="button" data-sort-value="read-asc">短读</button>
+              <button type="button" data-sort-value="read-desc">长读</button>
+              <button type="button" data-sort-value="title">标题</button>
+            </div>
+            <select id="blog-sort" data-blog-sort>
+              <option value="newest">最新优先</option>
+              <option value="oldest">最早优先</option>
+              <option value="read-asc">阅读时间短</option>
+              <option value="read-desc">阅读时间长</option>
+              <option value="title">标题 A-Z</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -61,6 +80,13 @@ const filterData = posts.map((post) => ({
       {posts.map((post) => <PostCard post={post} />)}
     </div>
     <p class="filter-empty" data-filter-empty hidden>没有匹配文章。</p>
+    <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 19V5" />
+        <path d="m5 12 7-7 7 7" />
+      </svg>
+      <span>顶部</span>
+    </button>
     <script id="blog-filter-data" type="application/json" set:html={JSON.stringify(filterData)}></script>
     <script is:inline>
       const posts = JSON.parse(document.querySelector("#blog-filter-data").textContent);
@@ -69,6 +95,11 @@ const filterData = posts.map((post) => ({
       const count = document.querySelector("[data-filter-count]");
       const empty = document.querySelector("[data-filter-empty]");
       const sortSelect = document.querySelector("[data-blog-sort]");
+      const sortButtons = document.querySelectorAll("[data-sort-value]");
+      const backToTop = document.querySelector("[data-back-to-top]");
+      const filterPanel = document.querySelector("[data-filter-panel]");
+      const filterToggle = document.querySelector("[data-filter-toggle]");
+      const filterToggleLabel = document.querySelector("[data-filter-toggle-label]");
       const validOptions = {
         series: new Set(["all", ...posts.map((post) => post.series)]),
         tag: new Set(["all", ...posts.flatMap((post) => post.tags)]),
@@ -88,6 +119,18 @@ const filterData = posts.map((post) => ({
       state.series = normalizeFilterValue("series", params.get("series") || params.get("topic"));
       state.tag = normalizeFilterValue("tag", params.get("tag"));
       state.sort = normalizeFilterValue("sort", params.get("sort"));
+      const hasActiveFilter = () => state.series !== "all" || state.tag !== "all" || state.sort !== "newest";
+
+      const setFilterPanelOpen = (isOpen) => {
+        controls.classList.toggle("is-open", isOpen);
+        filterToggle?.setAttribute("aria-expanded", String(isOpen));
+        if (filterToggleLabel) filterToggleLabel.textContent = isOpen ? "收起" : "筛选";
+      };
+
+      setFilterPanelOpen(hasActiveFilter());
+      filterToggle?.addEventListener("click", () => {
+        setFilterPanelOpen(!controls.classList.contains("is-open"));
+      });
 
       const setCardVisible = (card, visible, order) => {
         card.hidden = !visible;
@@ -100,6 +143,16 @@ const filterData = posts.map((post) => ({
         }
       }
 
+      const updateBackToTop = () => {
+        backToTop?.classList.toggle("is-visible", window.scrollY > 520);
+      };
+
+      backToTop?.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+      window.addEventListener("scroll", updateBackToTop, { passive: true });
+      updateBackToTop();
+
       const updateButtons = () => {
         controls.querySelectorAll("[data-filter-group]").forEach((group) => {
           const key = group.dataset.filterGroup;
@@ -108,6 +161,9 @@ const filterData = posts.map((post) => ({
           });
         });
         sortSelect.value = state.sort;
+        sortButtons.forEach((button) => {
+          button.setAttribute("aria-pressed", String(button.dataset.sortValue === state.sort));
+        });
       };
 
       const sortPosts = (items) => [...items].sort((a, b) => {
@@ -157,6 +213,13 @@ const filterData = posts.map((post) => ({
       sortSelect.addEventListener("change", () => {
         state.sort = normalizeFilterValue("sort", sortSelect.value);
         render();
+      });
+
+      sortButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          state.sort = normalizeFilterValue("sort", button.dataset.sortValue);
+          render();
+        });
       });
 
       render();

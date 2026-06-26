@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Yunbo">
+  <rect width="64" height="64" rx="14" fill="#f7f5ef"/>
+  <rect x="8" y="14" width="30" height="36" rx="18" fill="#090909"/>
+  <rect x="26" y="14" width="30" height="36" rx="18" fill="#ffd84d" stroke="#090909" stroke-width="3"/>
+  <text x="23" y="39" fill="#fffdf8" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="900" text-anchor="middle">Y</text>
+  <text x="41" y="39" fill="#090909" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="900" text-anchor="middle">b</text>
+</svg>

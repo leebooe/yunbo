@@ -37,11 +37,29 @@ const Content = post.entry.default;
         <nav></nav>
       </aside>
     </div>
+    <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 19V5" />
+        <path d="m5 12 7-7 7 7" />
+      </svg>
+      <span>顶部</span>
+    </button>
     <script is:inline>
       const articleBody = document.querySelector(".article-body");
       const toc = document.querySelector("[data-article-toc]");
       const tocNav = toc?.querySelector("nav");
+      const backToTop = document.querySelector("[data-back-to-top]");
       const headings = [...articleBody.querySelectorAll("h2, h3, h4")].filter((heading) => heading.id && heading.textContent.trim());
+
+      const updateBackToTop = () => {
+        backToTop?.classList.toggle("is-visible", window.scrollY > 520);
+      };
+
+      backToTop?.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+      window.addEventListener("scroll", updateBackToTop, { passive: true });
+      updateBackToTop();
 
       if (headings.length > 0 && toc && tocNav) {
         toc.hidden = false;
