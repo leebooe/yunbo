@@ -1,0 +1,23 @@
+{
+  "name": "yunbo",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && pagefind --site dist",
+    "preview": "astro preview",
+    "sync:private": "node scripts/sync-private-content.mjs",
+    "sync:wechat": "node scripts/sync-wechat.mjs"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "latest",
+    "astro": "latest",
+    "gray-matter": "latest",
+    "reading-time": "latest"
+  },
+  "devDependencies": {
+    "pagefind": "latest",
+    "typescript": "latest"
+  }
+}

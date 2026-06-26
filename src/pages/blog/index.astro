@@ -1,0 +1,165 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PostCard from "@/components/PostCard.astro";
+import { getAllPosts, getTopics } from "@/lib/posts";
+
+const posts = getAllPosts();
+const topics = getTopics(posts);
+const tags = [...new Map(posts.flatMap((post) => post.tags).map((tag) => [tag, 0]))].map(([tag]) => ({
+  name: tag,
+  count: posts.filter((post) => post.tags.includes(tag)).length
+})).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+const filterData = posts.map((post) => ({
+  slug: post.slug,
+  title: post.title,
+  series: post.series,
+  tags: post.tags,
+  date: post.date.toISOString(),
+  minutes: post.minutes
+}));
+---
+
+<BaseLayout title="文章">
+  <section class="container page-hero compact">
+    <p class="eyebrow">Article library</p>
+    <h1>文章</h1>
+    <p>按时间整理的 AI 工具、Agent、自动化与 NAS 实战记录。</p>
+  </section>
+  <section class="container section">
+    <div class="blog-controls" data-blog-controls>
+      <div class="controls-head">
+        <span>快速筛选</span>
+        <small data-filter-count>{posts.length} 篇文章</small>
+      </div>
+      <div class="control-row">
+        <span>专题</span>
+        <div class="filter-pills" data-filter-group="series">
+          <button type="button" data-filter-value="all" aria-pressed="true">全部</button>
+          {topics.map((topic) => <button type="button" data-filter-value={topic.name}>{topic.name}<b>{topic.count}</b></button>)}
+        </div>
+      </div>
+      <div class="control-row">
+        <span>标签</span>
+        <div class="filter-pills" data-filter-group="tag">
+          <button type="button" data-filter-value="all" aria-pressed="true">全部</button>
+          {tags.map((tag) => <button type="button" data-filter-value={tag.name}>{tag.name}<b>{tag.count}</b></button>)}
+        </div>
+      </div>
+      <div class="control-row sort-row">
+        <label for="blog-sort">排序</label>
+        <select id="blog-sort" data-blog-sort>
+          <option value="newest">最新优先</option>
+          <option value="oldest">最早优先</option>
+          <option value="read-asc">阅读时间短</option>
+          <option value="read-desc">阅读时间长</option>
+          <option value="title">标题 A-Z</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="post-grid" data-post-grid>
+      {posts.map((post) => <PostCard post={post} />)}
+    </div>
+    <p class="filter-empty" data-filter-empty hidden>没有匹配文章。</p>
+    <script id="blog-filter-data" type="application/json" set:html={JSON.stringify(filterData)}></script>
+    <script is:inline>
+      const posts = JSON.parse(document.querySelector("#blog-filter-data").textContent);
+      const controls = document.querySelector("[data-blog-controls]");
+      const cards = [...document.querySelectorAll("[data-post-slug]")];
+      const count = document.querySelector("[data-filter-count]");
+      const empty = document.querySelector("[data-filter-empty]");
+      const sortSelect = document.querySelector("[data-blog-sort]");
+      const validOptions = {
+        series: new Set(["all", ...posts.map((post) => post.series)]),
+        tag: new Set(["all", ...posts.flatMap((post) => post.tags)]),
+        sort: new Set(["newest", "oldest", "read-asc", "read-desc", "title"])
+      };
+      const state = {
+        series: "all",
+        tag: "all",
+        sort: "newest"
+      };
+
+      const params = new URLSearchParams(window.location.search);
+      const normalizeFilterValue = (key, value) => {
+        const nextValue = value?.trim() || "all";
+        return validOptions[key].has(nextValue) ? nextValue : "all";
+      };
+      state.series = normalizeFilterValue("series", params.get("series") || params.get("topic"));
+      state.tag = normalizeFilterValue("tag", params.get("tag"));
+      state.sort = normalizeFilterValue("sort", params.get("sort"));
+
+      const setCardVisible = (card, visible, order) => {
+        card.hidden = !visible;
+        card.setAttribute("aria-hidden", String(!visible));
+        card.style.display = visible ? "" : "none";
+        if (visible) {
+          card.style.order = String(order);
+        } else {
+          card.style.removeProperty("order");
+        }
+      }
+
+      const updateButtons = () => {
+        controls.querySelectorAll("[data-filter-group]").forEach((group) => {
+          const key = group.dataset.filterGroup;
+          group.querySelectorAll("button").forEach((button) => {
+            button.setAttribute("aria-pressed", String(button.dataset.filterValue === state[key]));
+          });
+        });
+        sortSelect.value = state.sort;
+      };
+
+      const sortPosts = (items) => [...items].sort((a, b) => {
+        if (state.sort === "oldest") return new Date(a.date) - new Date(b.date);
+        if (state.sort === "read-asc") return a.minutes - b.minutes;
+        if (state.sort === "read-desc") return b.minutes - a.minutes;
+        if (state.sort === "title") return a.title.localeCompare(b.title);
+        return new Date(b.date) - new Date(a.date);
+      });
+
+      const syncUrl = () => {
+        const next = new URLSearchParams();
+        if (state.series !== "all") next.set("series", state.series);
+        if (state.tag !== "all") next.set("tag", state.tag);
+        if (state.sort !== "newest") next.set("sort", state.sort);
+        const query = next.toString();
+        window.history.replaceState(null, "", query ? `/blog/?${query}` : "/blog/");
+      };
+
+      const render = () => {
+        const matched = sortPosts(posts.filter((post) => {
+          const seriesMatch = state.series === "all" || post.series === state.series;
+          const tagMatch = state.tag === "all" || post.tags.includes(state.tag);
+          return seriesMatch && tagMatch;
+        }));
+
+        const order = new Map(matched.map((post, index) => [post.slug, index]));
+        cards.forEach((card) => {
+          const index = order.get(card.dataset.postSlug);
+          setCardVisible(card, index !== undefined, index);
+        });
+        count.textContent = `${matched.length} 篇文章`;
+        empty.hidden = matched.length > 0;
+        updateButtons();
+        syncUrl();
+      };
+
+      controls.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-filter-value]");
+        if (!button) return;
+        const group = button.closest("[data-filter-group]");
+        const key = group.dataset.filterGroup;
+        state[key] = normalizeFilterValue(key, button.dataset.filterValue);
+        render();
+      });
+
+      sortSelect.addEventListener("change", () => {
+        state.sort = normalizeFilterValue("sort", sortSelect.value);
+        render();
+      });
+
+      render();
+    </script>
+  </section>
+</BaseLayout>

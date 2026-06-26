@@ -1,0 +1,24 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getAllPosts, getTopics } from "@/lib/posts";
+
+const topics = getTopics(getAllPosts());
+---
+
+<BaseLayout title="专题">
+  <section class="container page-hero compact">
+    <p class="eyebrow">Topics</p>
+    <h1>专题</h1>
+    <p>按系列归档，快速进入同一条实践线索。</p>
+  </section>
+  <section class="container section">
+    <div class="topic-band">
+      {topics.map((topic) => (
+        <a class="topic-link" href={`/topics/${topic.slug}/`}>
+          <strong>{topic.name}</strong>
+          <span>{topic.count} 篇文章</span>
+        </a>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

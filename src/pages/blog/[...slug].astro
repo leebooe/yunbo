@@ -1,0 +1,157 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { formatDate, getAllPosts, getBlogFilterUrl } from "@/lib/posts";
+
+export function getStaticPaths() {
+  return getAllPosts().map((post) => ({
+    params: { slug: post.slug },
+    props: { post }
+  }));
+}
+
+const { post } = Astro.props;
+const Content = post.entry.default;
+---
+
+<BaseLayout title={post.title} description={post.description}>
+  <article data-pagefind-body>
+    <header class="article-header">
+      <div class="article-header-main">
+        <div class="meta">
+          <span>{formatDate(post.date)}</span>
+          <a href={getBlogFilterUrl({ series: post.series })}>{post.series}</a>
+          <span>约 {post.minutes} 分钟阅读</span>
+        </div>
+        <h1>{post.title}</h1>
+        <div class="tag-list" aria-label="标签">
+          {post.tags.map((tag) => <a class="tag" href={getBlogFilterUrl({ tag })}>{tag}</a>)}
+        </div>
+      </div>
+    </header>
+    <div class="article-shell">
+      <div class="article-body">
+        <Content />
+      </div>
+      <aside class="article-toc" aria-label="文章目录" data-article-toc hidden>
+        <h2>目录</h2>
+        <nav></nav>
+      </aside>
+    </div>
+    <script is:inline>
+      const articleBody = document.querySelector(".article-body");
+      const toc = document.querySelector("[data-article-toc]");
+      const tocNav = toc?.querySelector("nav");
+      const headings = [...articleBody.querySelectorAll("h2, h3, h4")].filter((heading) => heading.id && heading.textContent.trim());
+
+      if (headings.length > 0 && toc && tocNav) {
+        toc.hidden = false;
+        tocNav.innerHTML = headings.map((heading) => `
+          <a class="level-${heading.tagName.toLowerCase()}" href="#${heading.id}">${heading.textContent.trim()}</a>
+        `).join("");
+      }
+
+      const formatLanguage = (language) => {
+        const value = String(language || "code").trim();
+        if (!value || value === "undefined") return "CODE";
+        return value.length > 18 ? value.slice(0, 18).toUpperCase() : value.toUpperCase();
+      };
+
+      const copyCode = async (text) => {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(text);
+          return;
+        }
+
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.inset = "0 auto auto 0";
+        textarea.style.opacity = "0";
+        document.body.append(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+      };
+
+      articleBody.querySelectorAll("pre").forEach((pre) => {
+        if (pre.closest(".code-frame")) return;
+
+        const code = pre.querySelector("code");
+        const classLanguage = code?.className.match(/language-([a-z0-9_-]+)/i)?.[1];
+        const language = formatLanguage(pre.dataset.language || classLanguage);
+        const codeText = pre.innerText.replace(/\n$/, "");
+        const lineCount = pre.querySelectorAll(".line").length || codeText.split("\n").length;
+
+        const frame = document.createElement("figure");
+        frame.className = "code-frame";
+        if (lineCount > 15) frame.classList.add("is-long", "is-collapsed");
+
+        const header = document.createElement("figcaption");
+        header.className = "code-frame-head";
+
+        const title = document.createElement("div");
+        title.className = "code-frame-title";
+
+        const dots = document.createElement("span");
+        dots.className = "code-window-dots";
+        dots.setAttribute("aria-hidden", "true");
+        dots.innerHTML = "<span></span><span></span><span></span>";
+
+        const label = document.createElement("span");
+        label.className = "code-language";
+        label.textContent = language;
+
+        const meta = document.createElement("span");
+        meta.className = "code-lines";
+        meta.textContent = `${lineCount} 行`;
+
+        const copyButton = document.createElement("button");
+        copyButton.className = "code-copy";
+        copyButton.type = "button";
+        copyButton.textContent = "复制";
+        copyButton.setAttribute("aria-label", "复制代码");
+
+        title.append(dots, label, meta);
+        header.append(title, copyButton);
+
+        pre.before(frame);
+        frame.append(header, pre);
+
+        copyButton.addEventListener("click", async () => {
+          const originalText = copyButton.textContent;
+          try {
+            await copyCode(codeText);
+            copyButton.textContent = "已复制";
+            copyButton.classList.add("is-copied");
+          } catch {
+            copyButton.textContent = "复制失败";
+          }
+
+          window.setTimeout(() => {
+            copyButton.textContent = originalText;
+            copyButton.classList.remove("is-copied");
+          }, 1600);
+        });
+
+        if (lineCount > 15) {
+          const footer = document.createElement("div");
+          footer.className = "code-frame-foot";
+
+          const expandButton = document.createElement("button");
+          expandButton.className = "code-expand";
+          expandButton.type = "button";
+          expandButton.textContent = "展开全部";
+
+          expandButton.addEventListener("click", () => {
+            const collapsed = frame.classList.toggle("is-collapsed");
+            expandButton.textContent = collapsed ? "展开全部" : "收起代码";
+          });
+
+          footer.append(expandButton);
+          frame.append(footer);
+        }
+      });
+    </script>
+  </article>
+</BaseLayout>

@@ -1,0 +1,75 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { formatDate, getAllPosts } from "@/lib/posts";
+
+const posts = getAllPosts();
+const searchItems = posts.map((post) => ({
+  title: post.title,
+  description: post.description,
+  url: post.url,
+  series: post.series,
+  tags: post.tags,
+  date: formatDate(post.date),
+  minutes: post.minutes,
+  text: [post.title, post.description, post.series, ...post.tags, post.entry.rawContent()].join(" ").toLowerCase()
+}));
+---
+
+<BaseLayout title="搜索">
+  <section class="content-width page-hero compact">
+    <p class="eyebrow">Search</p>
+    <h1>搜索</h1>
+    <p>输入工具、专题或关键词，快速找到相关实践记录。</p>
+  </section>
+  <section class="content-width section search-section">
+    <div class="site-search-panel">
+      <label class="sr-only" for="article-search">搜索文章</label>
+      <input id="article-search" type="search" placeholder="搜索文章、专题、标签" autocomplete="off" />
+      <span id="search-count">{posts.length} 篇文章</span>
+    </div>
+    <div id="search-results" class="search-results" aria-live="polite"></div>
+    <script id="search-data" type="application/json" set:html={JSON.stringify(searchItems)}></script>
+    <script is:inline>
+      const items = JSON.parse(document.querySelector("#search-data").textContent);
+      const input = document.querySelector("#article-search");
+      const results = document.querySelector("#search-results");
+      const count = document.querySelector("#search-count");
+      const params = new URLSearchParams(window.location.search);
+
+      const normalize = (value) => value.trim().toLowerCase();
+      const escapeHtml = (value) => value.replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[char]);
+
+      const render = (query) => {
+        const terms = normalize(query).split(/\s+/).filter(Boolean);
+        const matched = terms.length === 0
+          ? items
+          : items.filter((item) => terms.every((term) => item.text.includes(term)));
+
+        count.textContent = terms.length === 0 ? `${items.length} 篇文章` : `找到 ${matched.length} 篇`;
+        results.innerHTML = matched.map((item) => `
+          <a class="search-result" href="${item.url}">
+            <span>${escapeHtml(item.series)} · ${escapeHtml(item.date)} · 约 ${item.minutes} 分钟阅读</span>
+            <strong>${escapeHtml(item.title)}</strong>
+            <p>${escapeHtml(item.description)}</p>
+            <small>${item.tags.map((tag) => `<em>${escapeHtml(tag)}</em>`).join("")}</small>
+          </a>
+        `).join("") || `<p class="search-empty">没有找到匹配文章。</p>`;
+      };
+
+      input.value = params.get("q") || "";
+      render(input.value);
+      input.addEventListener("input", () => {
+        const query = input.value.trim();
+        const nextUrl = query ? `/search/?q=${encodeURIComponent(query)}` : "/search/";
+        window.history.replaceState(null, "", nextUrl);
+        render(query);
+      });
+    </script>
+  </section>
+</BaseLayout>

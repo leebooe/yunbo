@@ -1,0 +1,33 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout theme
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync private content
+        run: npm run sync:private
+        env:
+          YUNBO_CONTENT_REPO: ${{ secrets.YUNBO_CONTENT_REPO }}
+          YUNBO_CONTENT_REF: ${{ secrets.YUNBO_CONTENT_REF || 'main' }}
+
+      - name: Build site
+        run: npm run build
+        env:
+          PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL || 'https://yunbo.example.com' }}

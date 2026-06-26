@@ -1,0 +1,30 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PostCard from "@/components/PostCard.astro";
+import { getAllPosts, getTopics } from "@/lib/posts";
+
+export function getStaticPaths() {
+  const posts = getAllPosts();
+  return getTopics(posts).map((topic) => ({
+    params: { topic: topic.name },
+    props: { topicName: topic.name }
+  }));
+}
+
+const { topicName } = Astro.props;
+const posts = getAllPosts();
+const topicPosts = posts.filter((post) => post.series === topicName);
+---
+
+<BaseLayout title={topicName}>
+  <section class="container page-hero compact">
+    <p class="eyebrow">Topic</p>
+    <h1>{topicName}</h1>
+    <p>{topicPosts.length} 篇文章，沿着同一个主题继续深入。</p>
+  </section>
+  <section class="container section">
+    <div class="post-grid">
+      {topicPosts.map((post) => <PostCard post={post} />)}
+    </div>
+  </section>
+</BaseLayout>

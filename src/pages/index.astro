@@ -1,0 +1,121 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { formatDate, getAllPosts, getTopics } from "@/lib/posts";
+
+const posts = getAllPosts();
+const latestPosts = posts.slice(0, 7);
+const featured = latestPosts[0];
+const topics = getTopics(posts);
+const topTopics = topics.slice(0, 8);
+const articleCount = posts.length;
+const tagCount = new Set(posts.flatMap((post) => post.tags)).size;
+const featureTags = ["Codex", "Hermes", "OpenClaw", "NAS", "Agent", "Workflow"];
+---
+
+<BaseLayout title="Yunbo">
+  <section class="hero-shell">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">Quiet publishing for long-form writing</p>
+        <h1>
+          <span>让文字有处停泊</span>
+          <em>Yunbo</em>
+        </h1>
+        <p class="hero-lede">
+          Yunbo 取自云与泊，寓意云起之后，文字有处停靠。它是一个面向长期写作的 Astro 博客主题，支持文章归档、专题整理、本地搜索、RSS 与静态部署。
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="/blog/">阅读最新文章</a>
+          <a class="button secondary" href="/topics/">浏览专题</a>
+        </div>
+        <div class="voice-tags" aria-label="核心内容标签">
+          {featureTags.map((tag) => <a href={`/search/?q=${encodeURIComponent(tag)}`}>{tag}</a>)}
+        </div>
+      </div>
+
+      <aside class="hero-console" aria-label="站点内容控制台">
+        <div class="console-topbar">
+          <span>Yunbo Studio</span>
+          <strong>Live</strong>
+        </div>
+        <div class="console-card feature-card">
+          <span class="card-kicker">Featured Article</span>
+          <a href={featured.url}>
+            <h2>{featured.title}</h2>
+            <p>{featured.description}</p>
+          </a>
+          <div class="waveform" aria-hidden="true">
+            {Array.from({ length: 32 }).map((_, index) => <span style={`--h:${18 + ((index * 17) % 52)}%`}></span>)}
+          </div>
+          <div class="console-meta">
+            <span>{featured.series}</span>
+            <span>约 {featured.minutes} 分钟阅读</span>
+            <span>{formatDate(featured.date)}</span>
+          </div>
+        </div>
+        <div class="console-grid">
+          <div>
+            <strong>{articleCount}</strong>
+            <span>文章</span>
+          </div>
+          <div>
+            <strong>{topics.length}</strong>
+            <span>专题</span>
+          </div>
+          <div>
+            <strong>{tagCount}</strong>
+            <span>标签</span>
+          </div>
+        </div>
+        <div class="prompt-box">
+          <span>Latest prompt</span>
+          <p>找到真实问题，设计可复用流程，然后写成下一篇文章。</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="container section split-section">
+    <div class="section-heading">
+      <p class="eyebrow">Latest updates</p>
+      <h2>最新文章</h2>
+    </div>
+    <div class="latest-layout">
+      <a class="lead-article" href={featured.url}>
+        <img src="/images/tech-hero-1280.jpg" width="720" height="405" alt="" />
+        <div>
+          <span>{featured.series}</span>
+          <h3>{featured.title}</h3>
+          <p>{featured.description}</p>
+          <small>{formatDate(featured.date)} · 约 {featured.minutes} 分钟阅读</small>
+        </div>
+      </a>
+      <div class="article-queue">
+        {latestPosts.slice(1, 7).map((post, index) => (
+          <a href={post.url}>
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            <div>
+              <strong>{post.title}</strong>
+              <small>{post.series} · {formatDate(post.date)} · 约 {post.minutes} 分钟阅读</small>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="container section topic-section">
+    <div class="section-heading">
+      <p class="eyebrow">Content library</p>
+      <h2>专题入口</h2>
+    </div>
+    <div class="topic-cloud">
+      {topTopics.map((topic) => (
+        <a href={`/topics/${topic.slug}/`}>
+          <span>{topic.name}</span>
+          <strong>{topic.count}</strong>
+        </a>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
