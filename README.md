@@ -1,52 +1,64 @@
 # Yunbo
 
-Yunbo is a quiet Astro blog theme for thoughtful writing. It includes Markdown posts, topic archives, client-side search, RSS, sitemap generation, theme switching, and Pagefind indexing for static deployment.
+[English](./README.en.md)
 
-The name comes from cloud and harbor imagery: ideas gather like clouds, then come to rest as published writing.
+![Node.js >= 22](https://img.shields.io/badge/Node.js-%3E%3D%2022-339933?logo=node.js&logoColor=white)
+![pnpm 11.9.0](https://img.shields.io/badge/pnpm-11.9.0-F69220?logo=pnpm&logoColor=white)
+![Astro 7.0.2](https://img.shields.io/badge/Astro-7.0.2-BC52EE?logo=astro&logoColor=white)
+![TypeScript 6.0.3](https://img.shields.io/badge/TypeScript-6.0.3-3178C6?logo=typescript&logoColor=white)
 
-## Features
+Yunbo 是一个安静、轻量的 Astro 博客主题，适合长期写作、文章归档、专题整理、本地搜索、RSS 和静态部署。
 
-- Astro static site with TypeScript.
-- Markdown content from `src/content/posts/**/*.md`.
-- Topic pages generated from each post's `series`.
-- Blog index with series filter, tag filter, and sorting.
-- Article pages with reading time, tags, table of contents, copyable code blocks, and collapsed long code blocks.
-- Local search page plus Pagefind assets generated during build.
-- RSS endpoint at `/rss.xml`.
-- Sitemap through `@astrojs/sitemap`.
-- Private content sync for public-code, private-writing workflows.
-- Optional WeChat/Obsidian Markdown import script.
+Yunbo 取自「云」与「泊」的意象：想法像云一样聚合，最终以文章的形式停泊下来。
 
-## Tech Stack
+## 功能
 
-- Astro
-- TypeScript
-- Markdown
-- `gray-matter`
-- `reading-time`
-- `@astrojs/sitemap`
-- `pagefind`
+- 基于 Astro 的静态博客。
+- 使用 TypeScript 和 Astro 组件开发。
+- Markdown 内容来源为 `src/content/posts/**/*.md`。
+- 根据文章 `series` 自动生成专题页。
+- 文章列表支持专题筛选、标签筛选和排序。
+- 文章详情支持阅读时间、标签、目录、代码复制和长代码折叠。
+- 搜索页支持本地前端搜索。
+- 生产构建后生成 Pagefind 索引。
+- `/rss.xml` RSS 输出。
+- 通过 `@astrojs/sitemap` 生成站点地图。
+- 支持公开主题仓库 + 私有内容仓库的部署方式。
+- 提供可选的微信/Obsidian Markdown 导入脚本。
 
-## Quick Start
+## 环境要求
+
+- Node.js >= 22
+- pnpm 11.9.0
+- Astro 7.0.2
+- TypeScript 6.0.3
+
+本项目也保留 `package-lock.json`，使用 npm 可以正常安装和构建。Cloudflare Pages 推荐 Node.js 22。
+
+## 快速开始
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open the local URL printed by Astro, usually `http://localhost:4321`.
+Astro 默认本地地址通常是：
 
-## Commands
-
-```bash
-npm run dev           # Start development server
-npm run build         # Build Astro site and generate Pagefind index
-npm run preview       # Preview production build
-npm run sync:private  # Pull private posts/images before build
-npm run sync:wechat   # Import local WeChat/Obsidian Markdown
+```text
+http://localhost:4321
 ```
 
-## Project Structure
+## 常用命令
+
+```bash
+npm run dev           # 启动开发服务器
+npm run build         # 构建静态站点并生成 Pagefind 索引
+npm run preview       # 预览生产构建结果
+npm run sync:private  # 构建前同步私有文章和图片
+npm run sync:wechat   # 导入本地微信/Obsidian Markdown
+```
+
+## 目录结构
 
 ```text
 .
@@ -78,14 +90,14 @@ npm run sync:wechat   # Import local WeChat/Obsidian Markdown
 └── dist/
 ```
 
-## Content Model
+## 文章格式
 
-Posts live in `src/content/posts/*.md`.
+文章放在 `src/content/posts/*.md`。
 
 ```yaml
 ---
-title: "Article title"
-description: "Short listing and SEO description"
+title: "文章标题"
+description: "用于列表、搜索和 SEO 的短描述"
 date: "2026-06-26"
 category: "Guide"
 series: "Yunbo"
@@ -97,43 +109,42 @@ draft: false
 ---
 ```
 
-Field usage:
+字段说明：
 
-- `title`: page title, card title, RSS title, search title.
-- `description`: cards, search results, metadata, RSS description.
-- `date`: sorting and display date.
-- `category`: broad content category.
-- `series`: topic grouping.
-- `tags`: blog filters and search keywords.
-- `source`: optional source links or references.
-- `draft`: `true` hides the post from public pages.
+- `title`：页面标题、文章卡片标题、RSS 标题、搜索标题。
+- `description`：文章卡片、搜索结果、页面元信息、RSS 描述。
+- `date`：排序和展示日期。
+- `category`：文章大类。
+- `series`：专题分组。
+- `tags`：文章筛选和搜索关键词。
+- `source`：可选来源链接或参考资料。
+- `draft`：设为 `true` 后从公开页面隐藏。
 
-Images should use root-relative paths:
+图片使用根路径：
 
 ```md
-![Alt text](/article-images/image-name.png)
+![图片说明](/article-images/image-name.png)
 ```
 
-The first image in a post becomes the card cover.
+文章中的第一张 Markdown 或 HTML 图片会作为卡片封面。
 
-## Public Theme, Private Content
+## 公开主题 + 私有内容
 
-Yunbo supports an open-source theme repository plus a private content repository.
+Yunbo 支持开源主题仓库和私有内容仓库分离。
 
-Recommended public repository:
+公开仓库建议结构：
 
 ```text
 yunbo/
 ├── src/content/posts/
 │   ├── welcome-to-yunbo.md
-│   └── private/              # ignored, created during deploy
-├── public/article-images/
-│   └── private/              # ignored, created during deploy
+│   └── private/              # 忽略，部署时生成
+├── public/article-images/    # 忽略私有同步图片
 └── scripts/
     └── sync-private-content.mjs
 ```
 
-Recommended private repository:
+私有仓库建议结构：
 
 ```text
 yunbo-content/
@@ -143,68 +154,73 @@ yunbo-content/
     └── image-name.png
 ```
 
-The sync script copies private posts into an ignored post directory and private images into the public image root so existing Markdown image URLs keep working:
+同步脚本会把私有文章复制到忽略目录，把图片复制到公共图片根目录，保持 Markdown 图片路径可用：
 
 ```text
 src/content/posts/private/
 public/article-images/
 ```
 
-Local usage:
+本地使用：
 
 ```bash
 cp .env.example .env
-# edit YUNBO_CONTENT_REPO
+# 编辑 YUNBO_CONTENT_REPO
 npm run sync:private
 npm run build
 ```
 
-CI usage:
+CI 使用：
 
 ```bash
 YUNBO_CONTENT_REPO=git@github.com:your-name/yunbo-content.git npm run sync:private
 npm run build
 ```
 
-For HTTPS tokens, use a secret-backed URL:
+HTTPS token 地址示例：
 
 ```text
-https://x-access-token:TOKEN@github.com/your-name/yunbo-content.git
+https://your-name:TOKEN@github.com/your-name/yunbo-content.git
 ```
 
 ## GitHub Actions
 
-`.github/workflows/build.yml` installs dependencies, optionally syncs private content through `YUNBO_CONTENT_REPO`, and runs `npm run build`.
+`.github/workflows/build.yml` 会安装依赖、按需同步私有内容，然后执行 `npm run build`。
 
-Set these values in GitHub:
+需要设置：
 
-- Repository secret `YUNBO_CONTENT_REPO`: private content repository URL.
-- Repository secret `YUNBO_CONTENT_REF`: branch name, usually `main`.
-- Repository variable `PUBLIC_SITE_URL`: production site URL.
+- Repository secret `YUNBO_CONTENT_REPO`：私有内容仓库地址。
+- Repository secret `YUNBO_CONTENT_REF`：分支名，通常是 `main`。
+- Repository variable `PUBLIC_SITE_URL`：生产站点 URL。
 
 ## Cloudflare Pages
 
-Use these settings:
+推荐配置：
 
 ```text
+Framework preset: Astro
 Build command: npm run sync:private && npm run build
 Build output directory: dist
+Root directory: /
+Deploy command: 留空
 Node.js version: 22
 ```
 
-Set Cloudflare environment variables:
+环境变量：
 
 ```text
 PUBLIC_SITE_URL=https://your-domain.com
-YUNBO_CONTENT_REPO=https://x-access-token:<token>@github.com/your-name/yunbo-content.git
+YUNBO_CONTENT_REPO=https://your-name:<token>@github.com/your-name/yunbo-content.git
 YUNBO_CONTENT_REF=main
 ```
 
-## WeChat/Obsidian Import
+`YUNBO_CONTENT_REPO` 建议使用加密变量。
 
-`scripts/sync-wechat.mjs` imports local Markdown and referenced images.
+## 微信/Obsidian 导入
 
-Configure paths through environment variables:
+`scripts/sync-wechat.mjs` 可以导入本地 Markdown 和引用图片。
+
+通过环境变量配置路径：
 
 ```bash
 WECHAT_SOURCE_DIR=/absolute/path/to/wechat-markdown \
@@ -212,22 +228,22 @@ WECHAT_ATTACHMENTS_DIRS="/absolute/path/to/attachments:/absolute/path/to/images"
 npm run sync:wechat
 ```
 
-The script writes normalized posts to `src/content/posts/` and copied images to `public/article-images/`.
+脚本会把规范化后的文章写入 `src/content/posts/`，把图片复制到 `public/article-images/`。
 
-## Configuration
+## 站点配置
 
-Set the production URL through `PUBLIC_SITE_URL`:
+通过 `PUBLIC_SITE_URL` 设置生产域名：
 
 ```bash
 PUBLIC_SITE_URL=https://your-domain.com npm run build
 ```
 
-Update visible site copy in:
+常见站点文案位置：
 
 - `src/layouts/BaseLayout.astro`
 - `src/pages/index.astro`
 - `src/pages/rss.xml.ts`
 
-## License
+## 许可证
 
 MIT
