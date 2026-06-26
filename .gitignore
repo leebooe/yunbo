@@ -8,4 +8,4 @@ npm-debug.log*
 !.env.example
 .content-private/
 src/content/posts/private/
-public/article-images/private/
+public/article-images/*

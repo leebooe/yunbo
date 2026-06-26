@@ -143,11 +143,11 @@ yunbo-content/
     └── image-name.png
 ```
 
-The sync script copies private repository content into ignored paths:
+The sync script copies private posts into an ignored post directory and private images into the public image root so existing Markdown image URLs keep working:
 
 ```text
 src/content/posts/private/
-public/article-images/private/
+public/article-images/
 ```
 
 Local usage:

@@ -112,7 +112,7 @@ Deployment sync target:
 
 ```text
 src/content/posts/private/
-public/article-images/private/
+public/article-images/
 ```
 
 Ignored paths:
@@ -120,7 +120,7 @@ Ignored paths:
 ```text
 .content-private/
 src/content/posts/private/
-public/article-images/private/
+public/article-images/*
 ```
 
 ## Code Rules

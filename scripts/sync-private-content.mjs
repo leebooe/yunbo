@@ -8,7 +8,7 @@ const contentDir = path.resolve(process.env.YUNBO_CONTENT_DIR || ".content-priva
 
 const mappings = [
   ["src/content/posts", "src/content/posts/private"],
-  ["public/article-images", "public/article-images/private"]
+  ["public/article-images", "public/article-images"]
 ];
 
 function run(command, args) {
