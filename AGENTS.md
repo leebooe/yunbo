@@ -11,7 +11,6 @@ This file is the operating guide for AI agents and developers working in this re
 - Styling: single global stylesheet at `src/styles/global.css`.
 - Search: custom client-side search page plus Pagefind assets generated during build.
 - Feeds: `/rss.xml` route plus sitemap integration.
-- Private publishing: optional content sync from a private repository before build.
 
 ## Architecture Map
 
@@ -20,7 +19,6 @@ This file is the operating guide for AI agents and developers working in this re
 ├── astro.config.mjs
 ├── package.json
 ├── scripts/
-│   ├── sync-private-content.mjs
 │   └── sync-wechat.mjs
 ├── public/
 │   ├── article-images/
@@ -51,7 +49,6 @@ This file is the operating guide for AI agents and developers working in this re
 2. `getAllPosts()` normalizes title, date, category, series, tags, draft state, reading time, description, and first image.
 3. Page routes call `getAllPosts()` and `getTopics()` to render home, blog, topics, article pages, search data, RSS, and sitemap.
 4. `npm run build` creates `dist/` through Astro, then runs Pagefind against `dist/`.
-5. `npm run sync:private` can pull private posts and images into ignored paths before build.
 
 ## Commands
 
@@ -59,7 +56,6 @@ This file is the operating guide for AI agents and developers working in this re
 - `npm run dev`: start local Astro dev server.
 - `npm run build`: build the static site and generate Pagefind search assets.
 - `npm run preview`: preview the generated site.
-- `npm run sync:private`: sync private repository content into ignored paths.
 - `npm run sync:wechat`: import Markdown from configured local WeChat/Obsidian folders.
 
 ## Content Rules
@@ -89,39 +85,6 @@ draft: false
 - `draft: true` hides a post from public routes.
 - Article images should use root-relative paths such as `/article-images/image-name.png`.
 - The first Markdown or HTML image becomes the card cover.
-
-## Private Content
-
-Keep real personal writing in a private repository when publishing the theme as open source.
-
-Public repository:
-
-```text
-src/content/posts/
-public/article-images/
-```
-
-Private repository:
-
-```text
-src/content/posts/*.md
-public/article-images/*
-```
-
-Deployment sync target:
-
-```text
-src/content/posts/private/
-public/article-images/
-```
-
-Ignored paths:
-
-```text
-.content-private/
-src/content/posts/private/
-public/article-images/*
-```
 
 ## Code Rules
 
@@ -186,16 +149,12 @@ Use this agent for:
 ## Review Checklist
 
 - `npm run build` succeeds.
-- Public repository contains demo posts only.
-- Private paths stay ignored.
 - New posts appear in `/blog/`, topic pages, `/search/`, and `/rss.xml`.
 - Topic slugs work with Chinese and English names.
 - Card cover images load from `public/`.
 - Mobile and desktop layouts remain readable.
-- Generated folders `dist/`, `.astro/`, `.content-private/`, and `node_modules/` stay treated as build artifacts.
+- Generated folders `dist/`, `.astro/`, and `node_modules/` stay treated as build artifacts.
 
 ## Deployment Notes
 
 - Set `PUBLIC_SITE_URL` to the production domain.
-- Set `YUNBO_CONTENT_REPO` for private content sync during deploy.
-- Set `YUNBO_CONTENT_REF` when the private repository branch differs from `main`.

@@ -21,7 +21,6 @@ The name comes from cloud and harbor imagery: ideas gather like clouds, then com
 - Local search page plus Pagefind assets generated during build.
 - RSS endpoint at `/rss.xml`.
 - Sitemap through `@astrojs/sitemap`.
-- Private content sync for public-code, private-writing workflows.
 - Optional WeChat/Obsidian Markdown import script.
 
 ## Requirements
@@ -52,25 +51,28 @@ http://localhost:4321
 npm run dev           # Start development server
 npm run build         # Build Astro site and generate Pagefind index
 npm run preview       # Preview production build
-npm run sync:private  # Pull private posts/images before build
 npm run sync:wechat   # Import local WeChat/Obsidian Markdown
 ```
 
-## Private Content
+## Content
 
-Yunbo supports an open-source theme repository plus a private content repository.
+Yunbo uses a single public repository by default. Put posts, images, and theme code in the same repository.
 
-Recommended private repository:
+Recommended structure:
 
 ```text
-yunbo-content/
+yunbo/
 ├── src/content/posts/
 │   └── my-real-post.md
 └── public/article-images/
     └── image-name.png
 ```
 
-The sync script copies private posts into `src/content/posts/private/` and private images into `public/article-images/`.
+Add a new post:
+
+```bash
+cp src/content/posts/welcome-to-yunbo.md src/content/posts/my-new-post.md
+```
 
 ## Cloudflare Pages
 
@@ -78,7 +80,7 @@ Recommended settings:
 
 ```text
 Framework preset: Astro
-Build command: npm run sync:private && npm run build
+Build command: npm run build
 Build output directory: dist
 Root directory: /
 Deploy command: empty
@@ -89,8 +91,6 @@ Environment variables:
 
 ```text
 PUBLIC_SITE_URL=https://your-domain.com
-YUNBO_CONTENT_REPO=https://your-name:<token>@github.com/your-name/yunbo-content.git
-YUNBO_CONTENT_REF=main
 ```
 
 ## License

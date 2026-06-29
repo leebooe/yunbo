@@ -21,12 +21,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Sync private content
-        run: npm run sync:private
-        env:
-          YUNBO_CONTENT_REPO: ${{ secrets.YUNBO_CONTENT_REPO }}
-          YUNBO_CONTENT_REF: ${{ secrets.YUNBO_CONTENT_REF || 'main' }}
-
       - name: Build site
         run: npm run build
         env:
