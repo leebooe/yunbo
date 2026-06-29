@@ -75,6 +75,14 @@ const featureTags = ["Codex", "Hermes", "OpenClaw", "NAS", "Agent", "Workflow"];
     </div>
   </section>
 
+  <section class="container section split-section recent-reading" data-recent-reading hidden>
+    <div class="section-heading">
+      <p class="eyebrow">Continue reading</p>
+      <h2>继续阅读</h2>
+    </div>
+    <div class="article-queue recent-reading-list" data-recent-reading-list></div>
+  </section>
+
   <section class="container section split-section">
     <div class="section-heading">
       <p class="eyebrow">Latest updates</p>
@@ -139,5 +147,34 @@ const featureTags = ["Codex", "Hermes", "OpenClaw", "NAS", "Agent", "Workflow"];
         }, 120 + index * 115);
       });
     }
+
+    const recentReading = document.querySelector("[data-recent-reading]");
+    const recentReadingList = document.querySelector("[data-recent-reading-list]");
+    try {
+      const items = JSON.parse(localStorage.getItem("yunbo-recent-posts") || "[]")
+        .filter((item) => item?.url && item?.title)
+        .slice(0, 5);
+
+      if (items.length > 0 && recentReading && recentReadingList) {
+        recentReading.hidden = false;
+        recentReadingList.replaceChildren(...items.map((item, index) => {
+          const link = document.createElement("a");
+          link.href = item.url;
+
+          const number = document.createElement("span");
+          number.textContent = String(index + 1).padStart(2, "0");
+
+          const body = document.createElement("div");
+          const title = document.createElement("strong");
+          title.textContent = item.title;
+          const meta = document.createElement("small");
+          meta.textContent = item.meta || item.series || "";
+
+          body.append(title, meta);
+          link.append(number, body);
+          return link;
+        }));
+      }
+    } catch {}
   </script>
 </BaseLayout>

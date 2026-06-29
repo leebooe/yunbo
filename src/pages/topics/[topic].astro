@@ -14,17 +14,63 @@ export function getStaticPaths() {
 const { topicName } = Astro.props;
 const posts = getAllPosts();
 const topicPosts = posts.filter((post) => post.series === topicName);
+const startPost = [...topicPosts].reverse()[0];
+const latestPosts = topicPosts.filter((post) => post.slug !== startPost?.slug).slice(0, 3);
+const latestSlugs = new Set(latestPosts.map((post) => post.slug));
+const deepDivePosts = topicPosts.filter((post) => post.slug !== startPost?.slug && !latestSlugs.has(post.slug));
 ---
 
 <BaseLayout title={topicName}>
   <section class="container page-hero compact">
     <p class="eyebrow">Topic</p>
     <h1>{topicName}</h1>
-    <p>{topicPosts.length} 篇文章，沿着同一个主题继续深入。</p>
+    <p>{topicPosts.length} 篇文章，按入门、深入、更新整理成一条阅读路径。</p>
   </section>
   <section class="container section">
-    <div class="post-grid">
-      {topicPosts.map((post) => <PostCard post={post} />)}
+    <div class="topic-roadmap">
+      {startPost && (
+        <section class="roadmap-step roadmap-start">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Start here</p>
+              <h2>从这里开始</h2>
+            </div>
+          </div>
+          <a class="roadmap-feature" href={startPost.url}>
+            <span>{startPost.series}</span>
+            <h3>{startPost.title}</h3>
+            <p>{startPost.description}</p>
+          </a>
+        </section>
+      )}
+
+      {deepDivePosts.length > 0 && (
+        <section class="roadmap-step">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Deep dive</p>
+              <h2>继续深入</h2>
+            </div>
+          </div>
+          <div class="post-grid">
+            {deepDivePosts.map((post) => <PostCard post={post} />)}
+          </div>
+        </section>
+      )}
+
+      {latestPosts.length > 0 && (
+        <section class="roadmap-step">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Latest updates</p>
+              <h2>最新更新</h2>
+            </div>
+          </div>
+          <div class="post-grid">
+            {latestPosts.map((post) => <PostCard post={post} />)}
+          </div>
+        </section>
+      )}
     </div>
   </section>
 </BaseLayout>
