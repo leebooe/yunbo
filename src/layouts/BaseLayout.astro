@@ -10,6 +10,7 @@ const siteName = "Yunbo";
 const { title = siteName, description = "A quiet Astro blog theme for thoughtful writing." } = Astro.props;
 const pageTitle = title === siteName ? siteName : `${title} | ${siteName}`;
 const searchQuery = Astro.url.searchParams.get("q") || "";
+const currentYear = new Date().getFullYear();
 ---
 
 <!doctype html>
@@ -150,10 +151,20 @@ const searchQuery = Astro.url.searchParams.get("q") || "";
     </main>
     <footer class="footer">
       <div class="container footer-inner">
-        <span>Yunbo</span>
-        <p>用 Markdown 写作，用静态博客沉淀长期思考。</p>
+        <div>
+          <span>Yunbo</span>
+          <p>用 Markdown 写作，用静态博客沉淀长期思考。</p>
+        </div>
+        <div class="footer-meta">
+          <p class="site-stats" aria-label="站点访问统计">
+            <span id="busuanzi_container_site_pv">访问 <strong id="busuanzi_value_site_pv">--</strong> 次</span>
+            <span id="busuanzi_container_site_uv">访客 <strong id="busuanzi_value_site_uv">--</strong> 人</span>
+          </p>
+          <p class="footer-copyright">© {currentYear} Yunbo. All rights reserved.</p>
+        </div>
       </div>
     </footer>
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
     <script is:inline>
       const siteSearch = document.querySelector("#site-search");
       const query = new URLSearchParams(window.location.search).get("q");
