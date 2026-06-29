@@ -135,11 +135,7 @@ const currentYear = new Date().getFullYear();
                 </button>
               </section>
               <section class="theme-section theme-accent" aria-label="主题色">
-                <div class="theme-section-title">主题色</div>
-                <label for="theme-accent-range">
-                  <span>色相</span>
-                  <output id="theme-accent-value" for="theme-accent-range">47°</output>
-                </label>
+                <div class="theme-section-title theme-accent-title">主题色 <output id="theme-accent-value" for="theme-accent-range">47°</output></div>
                 <input id="theme-accent-range" type="range" min="0" max="360" step="1" value="47" />
                 <button class="theme-reset" type="button" data-theme-reset aria-label="恢复默认主题色">
                   <svg viewBox="0 0 24 24" aria-hidden="true">

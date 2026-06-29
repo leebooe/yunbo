@@ -167,7 +167,7 @@ body {
   background:
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
     linear-gradient(180deg, var(--grid-line) 1px, transparent 1px),
-    linear-gradient(color-mix(in srgb, var(--bg), transparent 18%), color-mix(in srgb, var(--bg), transparent 18%)),
+    linear-gradient(color-mix(in srgb, var(--bg), transparent 34%), color-mix(in srgb, var(--bg), transparent 34%)),
     var(--wallpaper-image) center / cover,
     var(--bg);
 }
@@ -481,6 +481,16 @@ pre code {
   letter-spacing: 0.08em;
 }
 
+.theme-accent-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.theme-accent-title output {
+  margin-left: auto;
+}
+
 .theme-accent {
   gap: 0.45rem;
   padding-right: 0.3rem;
@@ -557,6 +567,10 @@ pre code {
 
 .wallpaper-section button {
   justify-content: start;
+}
+
+.wallpaper-section {
+  display: none;
 }
 
 .list-layout-section button {
@@ -1399,7 +1413,7 @@ pre code {
   overflow: hidden;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius);
-  background: var(--card-translucent);
+  background: color-mix(in srgb, var(--paper-strong), transparent 8%);
   padding: 1rem;
   text-decoration: none;
   box-shadow: 0 0 0 rgba(0, 0, 0, 0);
