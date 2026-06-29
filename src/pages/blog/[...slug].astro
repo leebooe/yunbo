@@ -11,10 +11,20 @@ export function getStaticPaths() {
 
 const { post } = Astro.props;
 const Content = post.entry.default;
-const seriesPosts = getAllPosts().filter((item) => item.series === post.series);
+const allPosts = getAllPosts();
+const seriesPosts = allPosts.filter((item) => item.series === post.series);
 const currentIndex = seriesPosts.findIndex((item) => item.slug === post.slug);
 const prevPost = currentIndex > 0 ? seriesPosts[currentIndex - 1] : undefined;
 const nextPost = currentIndex >= 0 ? seriesPosts[currentIndex + 1] : undefined;
+const recommendedPosts = allPosts
+  .filter((item) => item.slug !== post.slug)
+  .map((item) => ({
+    post: item,
+    score: (item.series === post.series ? 2 : 0) + item.tags.filter((tag) => post.tags.includes(tag)).length
+  }))
+  .filter((item) => item.score > 0)
+  .sort((a, b) => b.score - a.score || b.post.date.getTime() - a.post.date.getTime())
+  .slice(0, 3);
 ---
 
 <BaseLayout title={post.title} description={post.description}>
@@ -37,9 +47,22 @@ const nextPost = currentIndex >= 0 ? seriesPosts[currentIndex + 1] : undefined;
         <Content />
       </div>
       <button class="toc-toggle" type="button" data-toc-toggle aria-expanded="false" aria-controls="article-toc" hidden>目录</button>
-      <aside class="article-toc" id="article-toc" aria-label="文章目录" data-article-toc hidden>
-        <h2>目录</h2>
-        <nav></nav>
+      <aside class="article-side">
+        <section class="article-toc" id="article-toc" aria-label="文章目录" data-article-toc hidden>
+          <h2>目录</h2>
+          <nav></nav>
+        </section>
+        {recommendedPosts.length > 0 && (
+          <section class="article-recommendations" aria-label="智能推荐">
+            <h2>智能推荐</h2>
+            {recommendedPosts.map(({ post: item }) => (
+              <a href={item.url}>
+                <strong>{item.title}</strong>
+                <span>{item.series} · {formatDate(item.date)}</span>
+              </a>
+            ))}
+          </section>
+        )}
       </aside>
     </div>
     {(prevPost || nextPost) && (

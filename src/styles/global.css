@@ -1750,17 +1750,28 @@ pre code {
   overflow-wrap: anywhere;
 }
 
-.article-toc {
+.article-side {
   position: sticky;
   top: 96px;
+  display: grid;
+  align-self: start;
+  gap: 0.85rem;
   min-width: 0;
-  max-height: calc(100vh - 120px);
-  overflow: auto;
+}
+
+.article-toc,
+.article-recommendations {
+  min-width: 0;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius);
   background: var(--card-translucent);
   padding: 0.85rem;
   box-shadow: var(--tight-shadow);
+}
+
+.article-toc {
+  max-height: calc(100vh - 120px);
+  overflow: auto;
 }
 
 .toc-toggle {
@@ -1773,12 +1784,14 @@ pre code {
 
 .series-nav {
   display: grid;
+  grid-template-columns: minmax(0, 820px) minmax(220px, 260px);
   gap: 0.75rem;
-  width: min(820px, calc(100% - 32px));
+  width: min(1120px, calc(100% - 32px));
   margin: -2.4rem auto 4rem;
 }
 
 .series-nav-title {
+  grid-column: 1;
   width: fit-content;
   color: var(--muted);
   font-weight: 900;
@@ -1787,6 +1800,7 @@ pre code {
 
 .series-nav > div {
   display: grid;
+  grid-column: 1;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.85rem;
 }
@@ -1822,7 +1836,7 @@ pre code {
 .code-frame {
   position: relative;
   overflow: hidden;
-  margin: 1.55rem 0;
+  margin: 1rem 0;
   border: 1px solid var(--black);
   border-radius: var(--radius);
   background: var(--code-frame-bg);
@@ -1922,11 +1936,11 @@ pre code {
   border: 0;
   border-radius: 0;
   background: var(--code-panel-bg) !important;
-  padding: 1rem 1.05rem;
+  padding: 0.72rem 1.05rem;
   color: var(--code-panel-ink);
   box-shadow: none;
   font-size: 0.88rem;
-  line-height: 1.72;
+  line-height: 1.42;
   tab-size: 2;
 }
 
@@ -1941,7 +1955,7 @@ pre code {
 .code-frame .line {
   position: relative;
   display: block;
-  min-height: 1.5em;
+  min-height: 1.42em;
   padding-left: 3.2rem;
 }
 
@@ -2022,6 +2036,75 @@ pre code {
 .article-toc .level-h4 {
   padding-left: 1.5rem;
   font-size: 0.82rem;
+}
+
+.article-recommendations {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--yellow), transparent 86%), transparent 52%),
+    var(--card-translucent);
+  counter-reset: recommendation;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.article-recommendations h2 {
+  margin-bottom: 0.2rem;
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.article-recommendations a {
+  position: relative;
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper-strong);
+  padding: 0.62rem 0.68rem 0.62rem 2.2rem;
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.article-recommendations a::before {
+  position: absolute;
+  top: 0.68rem;
+  left: 0.68rem;
+  display: grid;
+  width: 1rem;
+  height: 1rem;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--black);
+  color: var(--on-dark);
+  content: counter(recommendation);
+  counter-increment: recommendation;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  font-weight: 900;
+}
+
+.article-recommendations a:hover {
+  border-color: var(--black);
+  box-shadow: 3px 3px 0 var(--yellow);
+  transform: translateY(-1px);
+}
+
+.article-recommendations strong,
+.article-recommendations span {
+  display: block;
+}
+
+.article-recommendations strong {
+  color: var(--ink);
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.article-recommendations span {
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 760;
 }
 
 .back-to-top {
@@ -2374,10 +2457,19 @@ pre code {
     width: min(820px, calc(100% - 32px));
   }
 
-  .article-toc {
+  .series-nav {
+    grid-template-columns: 1fr;
+    width: min(820px, calc(100% - 32px));
+  }
+
+  .article-side {
     position: static;
     order: -1;
+  }
+
+  .article-toc {
     max-height: none;
+    overflow: visible;
   }
 
   .toc-toggle {
@@ -2583,7 +2675,7 @@ pre code {
   }
 
   .code-frame {
-    margin: 1.25rem -0.25rem;
+    margin: 0.85rem -0.25rem;
     box-shadow: 5px 5px 0 var(--yellow), var(--tight-shadow);
   }
 
@@ -2623,13 +2715,14 @@ pre code {
   }
 
   .code-frame pre {
-    padding: 0.68rem 0.7rem;
+    padding: 0.52rem 0.7rem;
     font-size: 0.68rem;
-    line-height: 1.5;
+    line-height: 1.38;
     tab-size: 2;
   }
 
   .code-frame .line {
+    min-height: 1.38em;
     padding-left: 2.1rem;
   }
 
@@ -2644,6 +2737,10 @@ pre code {
   .article-header {
     width: min(100% - 24px, 820px);
   }
+
+  .series-nav {
+    width: min(100% - 24px, 820px);
+  }
 }
 
 @media (max-width: 420px) {
@@ -2653,9 +2750,9 @@ pre code {
   }
 
   .code-frame pre {
-    padding: 0.62rem 0.62rem;
+    padding: 0.48rem 0.62rem;
     font-size: 0.64rem;
-    line-height: 1.46;
+    line-height: 1.34;
   }
 
   .code-frame-title,
@@ -2668,6 +2765,7 @@ pre code {
   }
 
   .code-frame .line {
+    min-height: 1.34em;
     padding-left: 1.85rem;
   }
 
