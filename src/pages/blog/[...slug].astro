@@ -11,6 +11,10 @@ export function getStaticPaths() {
 
 const { post } = Astro.props;
 const Content = post.entry.default;
+const seriesPosts = getAllPosts().filter((item) => item.series === post.series);
+const currentIndex = seriesPosts.findIndex((item) => item.slug === post.slug);
+const prevPost = currentIndex > 0 ? seriesPosts[currentIndex - 1] : undefined;
+const nextPost = currentIndex >= 0 ? seriesPosts[currentIndex + 1] : undefined;
 ---
 
 <BaseLayout title={post.title} description={post.description}>
@@ -32,27 +36,54 @@ const Content = post.entry.default;
       <div class="article-body">
         <Content />
       </div>
-      <aside class="article-toc" aria-label="文章目录" data-article-toc hidden>
+      <button class="toc-toggle" type="button" data-toc-toggle aria-expanded="false" aria-controls="article-toc" hidden>目录</button>
+      <aside class="article-toc" id="article-toc" aria-label="文章目录" data-article-toc hidden>
         <h2>目录</h2>
         <nav></nav>
       </aside>
     </div>
-    <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部">
+    {(prevPost || nextPost) && (
+      <nav class="series-nav" aria-label="同系列文章">
+        <a class="series-nav-title" href={getBlogFilterUrl({ series: post.series })}>{post.series}</a>
+        <div>
+          {prevPost && (
+            <a href={prevPost.url}>
+              <span>上一篇</span>
+              <strong>{prevPost.title}</strong>
+            </a>
+          )}
+          {nextPost && (
+            <a href={nextPost.url}>
+              <span>下一篇</span>
+              <strong>{nextPost.title}</strong>
+            </a>
+          )}
+        </div>
+      </nav>
+    )}
+    <button class="back-to-top" type="button" data-back-to-top aria-label="阅读进度，回到顶部">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 19V5" />
         <path d="m5 12 7-7 7 7" />
       </svg>
-      <span>顶部</span>
+      <span data-read-progress-label>0%</span>
     </button>
     <script is:inline>
       const articleBody = document.querySelector(".article-body");
       const toc = document.querySelector("[data-article-toc]");
       const tocNav = toc?.querySelector("nav");
+      const tocToggle = document.querySelector("[data-toc-toggle]");
       const backToTop = document.querySelector("[data-back-to-top]");
+      const readProgressLabel = document.querySelector("[data-read-progress-label]");
       const headings = [...articleBody.querySelectorAll("h2, h3, h4")].filter((heading) => heading.id && heading.textContent.trim());
 
       const updateBackToTop = () => {
         backToTop?.classList.toggle("is-visible", window.scrollY > 520);
+        const start = articleBody.offsetTop;
+        const end = Math.max(start + articleBody.offsetHeight - window.innerHeight, start + 1);
+        const progress = Math.min(1, Math.max(0, (window.scrollY - start) / (end - start)));
+        backToTop?.style.setProperty("--read-progress", `${Math.round(progress * 360)}deg`);
+        if (readProgressLabel) readProgressLabel.textContent = `${Math.round(progress * 100)}%`;
       };
 
       backToTop?.addEventListener("click", () => {
@@ -63,9 +94,38 @@ const Content = post.entry.default;
 
       if (headings.length > 0 && toc && tocNav) {
         toc.hidden = false;
+        if (tocToggle) tocToggle.hidden = false;
         tocNav.innerHTML = headings.map((heading) => `
           <a class="level-${heading.tagName.toLowerCase()}" href="#${heading.id}">${heading.textContent.trim()}</a>
         `).join("");
+
+        const tocLinks = [...tocNav.querySelectorAll("a")];
+        const updateActiveToc = () => {
+          const activeIndex = Math.max(0, headings.findLastIndex((heading) => heading.getBoundingClientRect().top <= 120));
+          tocLinks.forEach((link, index) => {
+            link.classList.toggle("is-active", index === activeIndex);
+            if (index === activeIndex) {
+              link.setAttribute("aria-current", "location");
+            } else {
+              link.removeAttribute("aria-current");
+            }
+          });
+        };
+
+        window.addEventListener("scroll", updateActiveToc, { passive: true });
+        updateActiveToc();
+
+        tocToggle?.addEventListener("click", () => {
+          const isOpen = toc.classList.toggle("is-open");
+          tocToggle.setAttribute("aria-expanded", String(isOpen));
+        });
+
+        tocLinks.forEach((link) => {
+          link.addEventListener("click", () => {
+            toc.classList.remove("is-open");
+            tocToggle?.setAttribute("aria-expanded", "false");
+          });
+        });
       }
 
       const formatLanguage = (language) => {
