@@ -25,6 +25,8 @@ const currentYear = new Date().getFullYear();
     <script is:inline>
       (() => {
         const allowed = new Set(["light", "dark", "system"]);
+        const allowedWallpaperModes = new Set(["solid", "full-transparent", "full-wallpaper", "banner-wallpaper"]);
+        const allowedPostListLayouts = new Set(["grid", "list"]);
         const defaultAccentHue = "47";
         const setAccentHue = (hue) => {
           const numericHue = Number(hue);
@@ -33,11 +35,17 @@ const currentYear = new Date().getFullYear();
         };
         let saved = "system";
         let savedAccentHue = defaultAccentHue;
+        let savedWallpaperMode = "solid";
+        let savedPostListLayout = "grid";
         try {
           saved = localStorage.getItem("yunbo-theme") || "system";
           savedAccentHue = localStorage.getItem("yunbo-accent-hue") || defaultAccentHue;
+          savedWallpaperMode = localStorage.getItem("yunbo-wallpaper-mode") || "solid";
+          savedPostListLayout = localStorage.getItem("yunbo-post-list-layout") || "grid";
         } catch {}
         document.documentElement.dataset.themeMode = allowed.has(saved) ? saved : "system";
+        document.documentElement.dataset.wallpaperMode = allowedWallpaperModes.has(savedWallpaperMode) ? savedWallpaperMode : "solid";
+        document.documentElement.dataset.postListLayout = allowedPostListLayouts.has(savedPostListLayout) ? savedPostListLayout : "grid";
         setAccentHue(savedAccentHue);
       })();
     </script>
@@ -133,14 +141,42 @@ const currentYear = new Date().getFullYear();
                   <output id="theme-accent-value" for="theme-accent-range">47°</output>
                 </label>
                 <input id="theme-accent-range" type="range" min="0" max="360" step="1" value="47" />
+                <button class="theme-reset" type="button" data-theme-reset aria-label="恢复默认主题色">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 12a8 8 0 1 0 2.35-5.65" />
+                    <path d="M4 4v6h6" />
+                  </svg>
+                  <span>恢复默认</span>
+                </button>
               </section>
-              <button class="theme-reset" type="button" data-theme-reset aria-label="恢复默认主题色">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M4 12a8 8 0 1 0 2.35-5.65" />
-                  <path d="M4 4v6h6" />
-                </svg>
-                <span>恢复默认</span>
-              </button>
+              <section class="theme-section wallpaper-section" aria-label="壁纸模式">
+                <div class="theme-section-title">壁纸模式</div>
+                <button type="button" data-wallpaper-mode="solid" aria-label="纯色背景">
+                  <span class="wallpaper-swatch solid" aria-hidden="true"></span>
+                  <span>纯色背景</span>
+                </button>
+                <button type="button" data-wallpaper-mode="full-transparent" aria-label="全屏透明">
+                  <span class="wallpaper-swatch full-transparent" aria-hidden="true"></span>
+                  <span>全屏透明</span>
+                </button>
+                <button type="button" data-wallpaper-mode="full-wallpaper" aria-label="全屏壁纸">
+                  <span class="wallpaper-swatch full-wallpaper" aria-hidden="true"></span>
+                  <span>全屏壁纸</span>
+                </button>
+                <button type="button" data-wallpaper-mode="banner-wallpaper" aria-label="横幅壁纸">
+                  <span class="wallpaper-swatch banner-wallpaper" aria-hidden="true"></span>
+                  <span>横幅壁纸</span>
+                </button>
+              </section>
+              <section class="theme-section list-layout-section" aria-label="文章列表展示">
+                <div class="theme-section-title">文章列表</div>
+                <button type="button" data-post-list-layout="grid" aria-label="网格展示">
+                  <span>网格</span>
+                </button>
+                <button type="button" data-post-list-layout="list" aria-label="列表展示">
+                  <span>列表</span>
+                </button>
+              </section>
             </div>
           </div>
         </div>
@@ -172,10 +208,14 @@ const currentYear = new Date().getFullYear();
 
       const root = document.documentElement;
       const themeButtons = document.querySelectorAll("[data-theme-mode]");
+      const wallpaperButtons = document.querySelectorAll("[data-wallpaper-mode]");
+      const postListLayoutButtons = document.querySelectorAll("[data-post-list-layout]");
       const accentRange = document.querySelector("#theme-accent-range");
       const accentOutput = document.querySelector("#theme-accent-value");
       const accentReset = document.querySelector("[data-theme-reset]");
       const allowedThemes = new Set(["light", "dark", "system"]);
+      const allowedWallpaperModes = new Set(["solid", "full-transparent", "full-wallpaper", "banner-wallpaper"]);
+      const allowedPostListLayouts = new Set(["grid", "list"]);
       const defaultAccentHue = 47;
       const setThemeMode = (mode) => {
         const nextMode = allowedThemes.has(mode) ? mode : "system";
@@ -185,6 +225,26 @@ const currentYear = new Date().getFullYear();
         } catch {}
         themeButtons.forEach((button) => {
           button.setAttribute("aria-pressed", String(button.dataset.themeMode === nextMode));
+        });
+      };
+      const setWallpaperMode = (mode) => {
+        const nextMode = allowedWallpaperModes.has(mode) ? mode : "solid";
+        root.dataset.wallpaperMode = nextMode;
+        try {
+          localStorage.setItem("yunbo-wallpaper-mode", nextMode);
+        } catch {}
+        wallpaperButtons.forEach((button) => {
+          button.setAttribute("aria-pressed", String(button.dataset.wallpaperMode === nextMode));
+        });
+      };
+      const setPostListLayout = (layout) => {
+        const nextLayout = allowedPostListLayouts.has(layout) ? layout : "grid";
+        root.dataset.postListLayout = nextLayout;
+        try {
+          localStorage.setItem("yunbo-post-list-layout", nextLayout);
+        } catch {}
+        postListLayoutButtons.forEach((button) => {
+          button.setAttribute("aria-pressed", String(button.dataset.postListLayout === nextLayout));
         });
       };
       const normalizeHue = (hue) => {
@@ -212,9 +272,17 @@ const currentYear = new Date().getFullYear();
       themeButtons.forEach((button) => {
         button.addEventListener("click", () => setThemeMode(button.dataset.themeMode));
       });
+      wallpaperButtons.forEach((button) => {
+        button.addEventListener("click", () => setWallpaperMode(button.dataset.wallpaperMode));
+      });
+      postListLayoutButtons.forEach((button) => {
+        button.addEventListener("click", () => setPostListLayout(button.dataset.postListLayout));
+      });
       accentRange?.addEventListener("input", () => setAccentHue(accentRange.value));
       accentReset?.addEventListener("click", resetAccentHue);
       setThemeMode(root.dataset.themeMode || "system");
+      setWallpaperMode(root.dataset.wallpaperMode || "solid");
+      setPostListLayout(root.dataset.postListLayout || "grid");
       try {
         setAccentHue(localStorage.getItem("yunbo-accent-hue") || defaultAccentHue, false);
       } catch {

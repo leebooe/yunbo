@@ -17,9 +17,9 @@ const featureTags = ["Codex", "Hermes", "OpenClaw", "NAS", "Agent", "Workflow"];
     <div class="container hero-grid">
       <div class="hero-copy">
         <p class="eyebrow">Quiet publishing for long-form writing</p>
-        <h1>
-          <span>让文字有处停泊</span>
-          <em>Yunbo</em>
+        <h1 class="hero-title" aria-label="让文字有处停泊 Yunbo">
+          <span data-typewriter="让文字有处停泊">让文字有处停泊</span>
+          <em data-typewriter-mark>Yunbo</em>
         </h1>
         <p class="hero-lede">
           Yunbo 取自云与泊，寓意云起之后，文字有处停靠。它是一个面向长期写作的 Astro 博客主题，支持文章归档、专题整理、本地搜索、RSS 与静态部署。
@@ -118,4 +118,26 @@ const featureTags = ["Codex", "Hermes", "OpenClaw", "NAS", "Agent", "Workflow"];
       ))}
     </div>
   </section>
+  <script>
+    const target = document.querySelector("[data-typewriter]");
+    const mark = document.querySelector("[data-typewriter-mark]");
+    const text = target?.getAttribute("data-typewriter") || "";
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (target && mark && text && !reducedMotion) {
+      target.textContent = "";
+      target.classList.add("is-typing");
+      mark.classList.add("is-waiting");
+
+      [...text].forEach((char, index) => {
+        window.setTimeout(() => {
+          target.textContent += char;
+          if (index === text.length - 1) {
+            target.classList.remove("is-typing");
+            mark.classList.remove("is-waiting");
+          }
+        }, 120 + index * 115);
+      });
+    }
+  </script>
 </BaseLayout>
