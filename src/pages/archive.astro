@@ -66,6 +66,7 @@ const articleHeatmaps = archiveYears.map((year) => {
 });
 const timeline = [...timelineGroups.entries()].map(([year, months]) => ({
   year,
+  total: [...months.values()].reduce((sum, posts) => sum + posts.length, 0),
   months: [...months.entries()].map(([month, posts]) => ({ month: `${Number(month)} 月`, monthNumber: month, posts }))
 }));
 ---
@@ -121,20 +122,30 @@ const timeline = [...timelineGroups.entries()].map(([year, months]) => ({
       </div>
     </article>
 
+    <div class="archive-bridge" aria-hidden="true">
+      <span>CODE</span>
+      <i></i>
+      <span>WRITE</span>
+    </div>
+
     <article class="archive-panel">
       <div class="archive-panel-head">
         <h2>文章分布</h2>
-        <div class="archive-year-switch" aria-label="切换文章分布年份">
+        <div class="archive-panel-actions">
+          <div class="archive-year-switch" aria-label="切换文章分布年份">
+            {articleHeatmaps.map((heatmap, index) => (
+              <button type="button" data-archive-year={heatmap.year} aria-pressed={index === 0 ? "true" : "false"}>
+                {heatmap.year}
+              </button>
+            ))}
+          </div>
           {articleHeatmaps.map((heatmap, index) => (
-            <button type="button" data-archive-year={heatmap.year} aria-pressed={index === 0 ? "true" : "false"}>
-              {heatmap.year}
-            </button>
+            <span data-archive-count={heatmap.year} hidden={index !== 0}>{heatmap.total} 篇文章</span>
           ))}
         </div>
       </div>
       {articleHeatmaps.map((heatmap, index) => (
         <div class="article-heatmap" data-archive-panel={heatmap.year} hidden={index !== 0} aria-label={`${heatmap.year} 年文章分布热力图`}>
-          <p class="heatmap-summary">{heatmap.total} 篇文章</p>
           <div class="heatmap-months" aria-hidden="true">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((month) => <span>{month}</span>)}
           </div>
@@ -166,11 +177,14 @@ const timeline = [...timelineGroups.entries()].map(([year, months]) => ({
   <section class="container section archive-timeline" aria-label="文章时间轴">
     {timeline.map((yearGroup) => (
       <section class="timeline-year">
-        <h2>{yearGroup.year}</h2>
+        <h2>
+          <span>{yearGroup.year} 年</span>
+          <small>共 {yearGroup.total} 篇文章</small>
+        </h2>
         <div class="timeline-months">
           {yearGroup.months.map((monthGroup) => (
             <section class="timeline-month" id={`archive-${yearGroup.year}-${monthGroup.monthNumber}`}>
-              <h3>{monthGroup.month}</h3>
+              <h3>{monthGroup.month} · {monthGroup.posts.length} 篇文章</h3>
               <div class="timeline-posts">
                 {monthGroup.posts.map((post) => (
                   <a class="timeline-post" href={post.url}>
@@ -195,6 +209,9 @@ const timeline = [...timelineGroups.entries()].map(([year, months]) => ({
         });
         document.querySelectorAll("[data-archive-panel]").forEach((panel) => {
           panel.hidden = panel.dataset.archivePanel !== year;
+        });
+        document.querySelectorAll("[data-archive-count]").forEach((count) => {
+          count.hidden = count.dataset.archiveCount !== year;
         });
       });
     });

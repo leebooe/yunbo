@@ -25,8 +25,9 @@ const currentYear = new Date().getFullYear();
     <script is:inline>
       (() => {
         const allowed = new Set(["light", "dark", "system"]);
-        const allowedWallpaperModes = new Set(["solid", "full-transparent", "full-wallpaper", "banner-wallpaper"]);
+        const allowedWallpaperModes = new Set(["solid", "global-transparent"]);
         const allowedPostListLayouts = new Set(["grid", "list"]);
+        const allowedBackgroundFixed = new Set(["false", "true"]);
         const defaultAccentHue = "47";
         const setAccentHue = (hue) => {
           const numericHue = Number(hue);
@@ -37,15 +38,18 @@ const currentYear = new Date().getFullYear();
         let savedAccentHue = defaultAccentHue;
         let savedWallpaperMode = "solid";
         let savedPostListLayout = "grid";
+        let savedBackgroundFixed = "false";
         try {
           saved = localStorage.getItem("yunbo-theme") || "system";
           savedAccentHue = localStorage.getItem("yunbo-accent-hue") || defaultAccentHue;
           savedWallpaperMode = localStorage.getItem("yunbo-wallpaper-mode") || "solid";
           savedPostListLayout = localStorage.getItem("yunbo-post-list-layout") || "grid";
+          savedBackgroundFixed = localStorage.getItem("yunbo-background-fixed") || "false";
         } catch {}
         document.documentElement.dataset.themeMode = allowed.has(saved) ? saved : "system";
         document.documentElement.dataset.wallpaperMode = allowedWallpaperModes.has(savedWallpaperMode) ? savedWallpaperMode : "solid";
         document.documentElement.dataset.postListLayout = allowedPostListLayouts.has(savedPostListLayout) ? savedPostListLayout : "grid";
+        document.documentElement.dataset.backgroundFixed = allowedBackgroundFixed.has(savedBackgroundFixed) ? savedBackgroundFixed : "false";
         setAccentHue(savedAccentHue);
       })();
     </script>
@@ -152,23 +156,26 @@ const currentYear = new Date().getFullYear();
                   <span>恢复默认</span>
                 </button>
               </section>
-              <section class="theme-section wallpaper-section" aria-label="壁纸模式">
-                <div class="theme-section-title">壁纸模式</div>
+              <section class="theme-section wallpaper-section" aria-label="全局透明">
+                <div class="theme-section-title">全局透明</div>
                 <button type="button" data-wallpaper-mode="solid" aria-label="纯色背景">
                   <span class="wallpaper-swatch solid" aria-hidden="true"></span>
-                  <span>纯色背景</span>
+                  <span>关闭</span>
                 </button>
-                <button type="button" data-wallpaper-mode="full-transparent" aria-label="全屏透明">
-                  <span class="wallpaper-swatch full-transparent" aria-hidden="true"></span>
-                  <span>全屏透明</span>
+                <button type="button" data-wallpaper-mode="global-transparent" aria-label="全局透明">
+                  <span class="wallpaper-swatch global-transparent" aria-hidden="true"></span>
+                  <span>开启</span>
                 </button>
-                <button type="button" data-wallpaper-mode="full-wallpaper" aria-label="全屏壁纸">
-                  <span class="wallpaper-swatch full-wallpaper" aria-hidden="true"></span>
-                  <span>全屏壁纸</span>
+              </section>
+              <section class="theme-section background-fixed-section" aria-label="背景固定">
+                <div class="theme-section-title">背景固定</div>
+                <button type="button" data-background-fixed="false" aria-label="背景随页面滚动">
+                  <span class="wallpaper-swatch scroll" aria-hidden="true"></span>
+                  <span>关闭</span>
                 </button>
-                <button type="button" data-wallpaper-mode="banner-wallpaper" aria-label="横幅壁纸">
-                  <span class="wallpaper-swatch banner-wallpaper" aria-hidden="true"></span>
-                  <span>横幅壁纸</span>
+                <button type="button" data-background-fixed="true" aria-label="背景固定不动">
+                  <span class="wallpaper-swatch fixed" aria-hidden="true"></span>
+                  <span>开启</span>
                 </button>
               </section>
               <section class="theme-section list-layout-section" aria-label="文章列表展示">
@@ -220,12 +227,14 @@ const currentYear = new Date().getFullYear();
       const themeButtons = document.querySelectorAll("[data-theme-mode]");
       const wallpaperButtons = document.querySelectorAll("[data-wallpaper-mode]");
       const postListLayoutButtons = document.querySelectorAll("[data-post-list-layout]");
+      const backgroundFixedButtons = document.querySelectorAll("[data-background-fixed]");
       const accentRange = document.querySelector("#theme-accent-range");
       const accentOutput = document.querySelector("#theme-accent-value");
       const accentReset = document.querySelector("[data-theme-reset]");
       const allowedThemes = new Set(["light", "dark", "system"]);
-      const allowedWallpaperModes = new Set(["solid", "full-transparent", "full-wallpaper", "banner-wallpaper"]);
+      const allowedWallpaperModes = new Set(["solid", "global-transparent"]);
       const allowedPostListLayouts = new Set(["grid", "list"]);
+      const allowedBackgroundFixed = new Set(["false", "true"]);
       const defaultAccentHue = 47;
       const setThemeMode = (mode) => {
         const nextMode = allowedThemes.has(mode) ? mode : "system";
@@ -255,6 +264,16 @@ const currentYear = new Date().getFullYear();
         } catch {}
         postListLayoutButtons.forEach((button) => {
           button.setAttribute("aria-pressed", String(button.dataset.postListLayout === nextLayout));
+        });
+      };
+      const setBackgroundFixed = (value) => {
+        const nextValue = allowedBackgroundFixed.has(value) ? value : "false";
+        root.dataset.backgroundFixed = nextValue;
+        try {
+          localStorage.setItem("yunbo-background-fixed", nextValue);
+        } catch {}
+        backgroundFixedButtons.forEach((button) => {
+          button.setAttribute("aria-pressed", String(button.dataset.backgroundFixed === nextValue));
         });
       };
       const normalizeHue = (hue) => {
@@ -288,11 +307,15 @@ const currentYear = new Date().getFullYear();
       postListLayoutButtons.forEach((button) => {
         button.addEventListener("click", () => setPostListLayout(button.dataset.postListLayout));
       });
+      backgroundFixedButtons.forEach((button) => {
+        button.addEventListener("click", () => setBackgroundFixed(button.dataset.backgroundFixed));
+      });
       accentRange?.addEventListener("input", () => setAccentHue(accentRange.value));
       accentReset?.addEventListener("click", resetAccentHue);
       setThemeMode(root.dataset.themeMode || "system");
       setWallpaperMode(root.dataset.wallpaperMode || "solid");
       setPostListLayout(root.dataset.postListLayout || "grid");
+      setBackgroundFixed(root.dataset.backgroundFixed || "false");
       try {
         setAccentHue(localStorage.getItem("yunbo-accent-hue") || defaultAccentHue, false);
       } catch {
