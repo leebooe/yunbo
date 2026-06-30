@@ -26,6 +26,7 @@ const recommendedPosts = allPosts
   .sort((a, b) => b.score - a.score || b.post.date.getTime() - a.post.date.getTime())
   .slice(0, 3);
 const githubUrl = "https://github.com/leebooe/yunbo";
+const codeBlockMode = process.env.YUNBO_CODE_BLOCKS === "expressive" ? "expressive" : "legacy";
 ---
 
 <BaseLayout title={post.title} description={post.description}>
@@ -109,7 +110,7 @@ const githubUrl = "https://github.com/leebooe/yunbo";
       series: post.series,
       meta: `${post.series} · ${formatDate(post.date)} · 约 ${post.minutes} 分钟阅读`
     })}></script>
-    <script is:inline>
+    <script is:inline data-code-block-mode={codeBlockMode}>
       const recentPostData = document.querySelector("#recent-post-data");
       try {
         const key = "yunbo-recent-posts";
@@ -124,6 +125,7 @@ const githubUrl = "https://github.com/leebooe/yunbo";
       const tocToggle = document.querySelector("[data-toc-toggle]");
       const backToTop = document.querySelector("[data-back-to-top]");
       const readProgressLabel = document.querySelector("[data-read-progress-label]");
+      const codeBlockMode = document.currentScript?.dataset.codeBlockMode || "legacy";
       const headings = [...articleBody.querySelectorAll("h2, h3, h4")].filter((heading) => heading.id && heading.textContent.trim());
 
       const updateBackToTop = () => {
@@ -201,7 +203,7 @@ const githubUrl = "https://github.com/leebooe/yunbo";
         textarea.remove();
       };
 
-      articleBody.querySelectorAll("pre").forEach((pre) => {
+      if (codeBlockMode === "legacy") articleBody.querySelectorAll("pre").forEach((pre) => {
         if (pre.closest(".code-frame")) return;
 
         const code = pre.querySelector("code");

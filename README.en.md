@@ -49,7 +49,9 @@ http://localhost:4321
 
 ```bash
 npm run dev           # Start development server
+npm run dev:expressive # Start development server with Expressive Code
 npm run build         # Build Astro site and generate Pagefind index
+npm run build:expressive # Build Astro site with Expressive Code
 npm run preview       # Preview production build
 npm run sync:wechat   # Import local WeChat/Obsidian Markdown
 ```

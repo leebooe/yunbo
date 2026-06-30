@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
+    "dev:expressive": "YUNBO_CODE_BLOCKS=expressive astro dev",
     "build": "astro build && pagefind --site dist",
+    "build:expressive": "YUNBO_CODE_BLOCKS=expressive astro build && pagefind --site dist",
     "preview": "astro preview",
     "sync:private": "node scripts/sync-private-content.mjs",
     "sync:wechat": "node scripts/sync-wechat.mjs"
@@ -13,6 +15,7 @@
   "dependencies": {
     "@astrojs/sitemap": "latest",
     "astro": "latest",
+    "astro-expressive-code": "^0.44.0",
     "gray-matter": "latest",
     "reading-time": "latest"
   },

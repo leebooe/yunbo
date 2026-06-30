@@ -51,7 +51,9 @@ http://localhost:4321
 
 ```bash
 npm run dev           # 启动开发服务器
+npm run dev:expressive # 使用 Expressive Code 启动开发服务器
 npm run build         # 构建静态站点并生成 Pagefind 索引
+npm run build:expressive # 使用 Expressive Code 构建静态站点
 npm run preview       # 预览生产构建结果
 npm run sync:wechat   # 导入本地微信/Obsidian Markdown
 ```
