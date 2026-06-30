@@ -10,6 +10,7 @@ const ATTACHMENTS_DIRS = (process.env.WECHAT_ATTACHMENTS_DIRS || "")
   .filter(Boolean);
 const TARGET_DIR = path.resolve("src/content/posts");
 const IMAGE_TARGET_DIR = path.resolve("public/article-images");
+const EXCLUDED_POSTS = new Set(["公众号写作风格卡", "待写选题池", "00-公众号索引", "公众号内容索引"]);
 
 const topicMap = new Map([
   ["Codex", "Codex"],
@@ -173,17 +174,26 @@ async function sync() {
   const attachmentIndex = await buildAttachmentIndex();
   const sourceFiles = await walk(SOURCE_DIR);
   let count = 0;
+  let skipped = 0;
   const missingImages = new Set();
 
   for (const sourceFile of sourceFiles) {
     const raw = await fs.readFile(sourceFile, "utf8");
     const parsed = matter(raw);
-    const content = await transformObsidianImages(parsed.content.trimStart(), attachmentIndex, missingImages);
     const title = parsed.data.title || path.basename(sourceFile, ".md");
-    const series = parsed.data.series || inferSeries(sourceFile);
-    const date = await dateForSource(sourceFile, parsed.data);
+    const sourceName = path.basename(sourceFile, ".md");
     const slug = parsed.data.slug || slugFromTitle(title, sourceFile);
     const targetFile = path.join(TARGET_DIR, `${slug}.md`);
+
+    if (EXCLUDED_POSTS.has(title) || EXCLUDED_POSTS.has(sourceName)) {
+      await fs.rm(targetFile, { force: true });
+      skipped += 1;
+      continue;
+    }
+
+    const content = await transformObsidianImages(parsed.content.trimStart(), attachmentIndex, missingImages);
+    const series = parsed.data.series || inferSeries(sourceFile);
+    const date = await dateForSource(sourceFile, parsed.data);
 
     const data = {
       title,
@@ -203,6 +213,7 @@ async function sync() {
   }
 
   console.log(`Synced ${count} Markdown files to ${TARGET_DIR}`);
+  if (skipped > 0) console.log(`Skipped ${skipped} excluded Markdown files`);
   if (missingImages.size > 0) {
     console.warn(`Missing ${missingImages.size} referenced image(s):`);
     for (const image of missingImages) console.warn(`- ${image}`);
