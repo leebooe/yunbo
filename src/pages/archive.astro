@@ -1,0 +1,238 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { formatDate, getAllPosts, type Post } from "@/lib/posts";
+
+const posts = getAllPosts();
+const githubUser = "leebooe";
+const monthCounts = new Map<string, { label: string; count: number }>();
+const timelineGroups = new Map<string, Map<string, Post[]>>();
+
+for (const post of posts) {
+  const year = String(post.date.getFullYear());
+  const month = String(post.date.getMonth() + 1).padStart(2, "0");
+  const key = `${year}-${month}`;
+  const current = monthCounts.get(key);
+  monthCounts.set(key, { label: `${year} / ${month}`, count: (current?.count || 0) + 1 });
+
+  if (!timelineGroups.has(year)) timelineGroups.set(year, new Map());
+  const months = timelineGroups.get(year)!;
+  months.set(month, [...(months.get(month) || []), post]);
+}
+
+const months = [...monthCounts.entries()]
+  .map(([key, value]) => ({ key, ...value }))
+  .sort((a, b) => a.key.localeCompare(b.key));
+const bestMonth = [...months].sort((a, b) => b.count - a.count)[0];
+const totalMinutes = posts.reduce((sum, post) => sum + post.minutes, 0);
+const archiveYears = [...timelineGroups.keys()].sort((a, b) => b.localeCompare(a));
+const currentYear = String(new Date().getFullYear());
+const currentMonth = new Date().getMonth();
+const githubStart = new Date(Number(currentYear), 0, 1);
+githubStart.setDate(githubStart.getDate() - githubStart.getDay());
+const githubEnd = new Date(Number(currentYear), currentMonth + 1, 0);
+const githubWeekCount = Math.floor((githubEnd.getTime() - githubStart.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
+const githubWeeks = Array.from({ length: githubWeekCount }, (_, week) =>
+  Array.from({ length: 7 }, (_, day) => {
+    const date = new Date(githubStart);
+    date.setDate(githubStart.getDate() + week * 7 + day);
+    const inRange = String(date.getFullYear()) === currentYear && date <= githubEnd;
+    return {
+      date: date.toISOString().slice(0, 10),
+      inRange,
+      week,
+      day
+    };
+  })
+);
+const githubMonthLabels = Array.from({ length: currentMonth + 1 }, (_, month) => {
+  const date = new Date(Number(currentYear), month, 1);
+  const column = Math.floor((date.getTime() - githubStart.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 2;
+  return { month: month + 1, column };
+});
+const articleHeatmaps = archiveYears.map((year) => {
+  const rows = Array.from({ length: 4 }, (_, week) =>
+    Array.from({ length: 12 }, (_, month) => ({ week, month, count: 0 }))
+  );
+  for (const post of posts) {
+    if (String(post.date.getFullYear()) !== year) continue;
+    rows[Math.min(3, Math.floor((post.date.getDate() - 1) / 7))][post.date.getMonth()].count += 1;
+  }
+  return {
+    year,
+    rows,
+    max: Math.max(1, ...rows.flat().map((cell) => cell.count)),
+    total: rows.flat().reduce((sum, cell) => sum + cell.count, 0)
+  };
+});
+const timeline = [...timelineGroups.entries()].map(([year, months]) => ({
+  year,
+  months: [...months.entries()].map(([month, posts]) => ({ month: `${Number(month)} 月`, monthNumber: month, posts }))
+}));
+---
+
+<BaseLayout title="归档" description="Yunbo 的文章归档、GitHub 贡献和月份分布。">
+  <section class="container page-hero compact hero-art archive-hero">
+    <p class="eyebrow">Archive</p>
+    <h1>归档</h1>
+    <p>把文章按时间收束起来，顺手看一眼写作节奏和代码痕迹。</p>
+    <div class="archive-stats" aria-label="归档统计">
+      <span>{posts.length} 篇文章</span>
+      <span>{months.length} 个写作月份</span>
+      {bestMonth && <span>最高产 {bestMonth.label} · {bestMonth.count} 篇</span>}
+      <span>约 {totalMinutes} 分钟阅读</span>
+    </div>
+  </section>
+
+  <section class="container section archive-overview" aria-label="归档概览">
+    <article class="archive-panel github-panel">
+      <div class="archive-panel-head">
+        <h2>GitHub 贡献</h2>
+        <span data-github-total>加载贡献中</span>
+      </div>
+      <div class="github-heatmap" data-github-user={githubUser} data-github-year={currentYear} aria-label={`${currentYear} 年 GitHub 贡献热力图`}>
+        <div class="github-scroll">
+          <div class="github-months" style={`--weeks: ${githubWeekCount}`} aria-hidden="true">
+            {githubMonthLabels.map((label) => <span style={`grid-column: ${label.column}`}>{label.month}</span>)}
+          </div>
+          <div class="github-grid" style={`--weeks: ${githubWeekCount}`}>
+            <div class="github-days" aria-hidden="true">
+              <span></span><span>一</span><span></span><span>三</span><span></span><span>五</span><span></span>
+            </div>
+            {githubWeeks.map((week) => (
+              <div class="github-week">
+                {week.map((cell) => (
+                  <a
+                    class={`heatmap-cell ${cell.inRange ? "is-empty" : "is-muted"}`}
+                    data-github-day={cell.inRange ? cell.date : undefined}
+                    title={`${cell.date} · 0 contributions`}
+                    aria-label={`${cell.date} · 0 contributions`}
+                    style="--heat: 0%"
+                  ></a>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div class="heatmap-legend" aria-hidden="true">
+          <span>少</span>
+          <i></i><i></i><i></i><i></i><i></i>
+          <span>多</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="archive-panel">
+      <div class="archive-panel-head">
+        <h2>文章分布</h2>
+        <div class="archive-year-switch" aria-label="切换文章分布年份">
+          {articleHeatmaps.map((heatmap, index) => (
+            <button type="button" data-archive-year={heatmap.year} aria-pressed={index === 0 ? "true" : "false"}>
+              {heatmap.year}
+            </button>
+          ))}
+        </div>
+      </div>
+      {articleHeatmaps.map((heatmap, index) => (
+        <div class="article-heatmap" data-archive-panel={heatmap.year} hidden={index !== 0} aria-label={`${heatmap.year} 年文章分布热力图`}>
+          <p class="heatmap-summary">{heatmap.total} 篇文章</p>
+          <div class="heatmap-months" aria-hidden="true">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((month) => <span>{month}</span>)}
+          </div>
+          {heatmap.rows.map((week) => (
+            <div class="heatmap-row">
+              <span>W{week[0].week + 1}</span>
+              {week.map((cell) => {
+                const month = String(cell.month + 1).padStart(2, "0");
+                const label = `${heatmap.year} 年 ${cell.month + 1} 月第 ${cell.week + 1} 周 · ${cell.count} 篇`;
+                const style = `--heat: ${cell.count ? Math.max(22, Math.round((cell.count / heatmap.max) * 100)) : 0}%`;
+                return cell.count ? (
+                  <a class="heatmap-cell" href={`#archive-${heatmap.year}-${month}`} title={label} aria-label={label} style={style}></a>
+                ) : (
+                  <span class="heatmap-cell is-empty" title={label} aria-label={label} style={style}></span>
+                );
+              })}
+            </div>
+          ))}
+          <div class="heatmap-legend" aria-hidden="true">
+            <span>少</span>
+            <i></i><i></i><i></i><i></i><i></i>
+            <span>多</span>
+          </div>
+        </div>
+      ))}
+    </article>
+  </section>
+
+  <section class="container section archive-timeline" aria-label="文章时间轴">
+    {timeline.map((yearGroup) => (
+      <section class="timeline-year">
+        <h2>{yearGroup.year}</h2>
+        <div class="timeline-months">
+          {yearGroup.months.map((monthGroup) => (
+            <section class="timeline-month" id={`archive-${yearGroup.year}-${monthGroup.monthNumber}`}>
+              <h3>{monthGroup.month}</h3>
+              <div class="timeline-posts">
+                {monthGroup.posts.map((post) => (
+                  <a class="timeline-post" href={post.url}>
+                    <time datetime={post.date.toISOString()}>{formatDate(post.date)}</time>
+                    <strong>{post.title}</strong>
+                    <span>{post.series} · 约 {post.minutes} 分钟阅读</span>
+                  </a>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      </section>
+    ))}
+  </section>
+  <script is:inline>
+    document.querySelectorAll("[data-archive-year]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const year = button.dataset.archiveYear;
+        document.querySelectorAll("[data-archive-year]").forEach((item) => {
+          item.setAttribute("aria-pressed", String(item === button));
+        });
+        document.querySelectorAll("[data-archive-panel]").forEach((panel) => {
+          panel.hidden = panel.dataset.archivePanel !== year;
+        });
+      });
+    });
+
+    const githubRoot = document.querySelector("[data-github-user]");
+    if (githubRoot) {
+      const user = githubRoot.dataset.githubUser;
+      const year = githubRoot.dataset.githubYear;
+      fetch(`https://github-contributions-api.jogruber.de/v4/${user}?y=${encodeURIComponent(year)}`)
+        .then((response) => response.ok ? response.json() : Promise.reject())
+        .then((data) => {
+          const days = {};
+          for (const item of data.contributions || []) {
+            days[item.date] = item.count;
+          }
+          const total = data.total?.[year] ?? 0;
+          const max = Math.max(1, ...Object.values(days));
+          const summary = document.querySelector("[data-github-total]");
+          if (summary) summary.textContent = `${total} contributions`;
+          document.querySelectorAll("[data-github-day]").forEach((cell) => {
+            const date = cell.dataset.githubDay;
+            const count = days[date] || 0;
+            const label = `${date} · ${count} contributions`;
+            cell.style.setProperty("--heat", count ? `${Math.max(22, Math.round((count / max) * 100))}%` : "0%");
+            cell.title = label;
+            cell.setAttribute("aria-label", label);
+            if (count) {
+              cell.classList.remove("is-empty");
+              cell.href = `https://github.com/${user}?tab=overview&from=${date}&to=${date}`;
+              cell.target = "_blank";
+              cell.rel = "noreferrer";
+            }
+          });
+        })
+        .catch(() => {
+          const summary = document.querySelector("[data-github-total]");
+          if (summary) summary.textContent = "贡献数据加载失败";
+        });
+    }
+  </script>
+</BaseLayout>

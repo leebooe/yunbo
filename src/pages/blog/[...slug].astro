@@ -66,18 +66,18 @@ const codeBlockMode = process.env.YUNBO_CODE_BLOCKS === "expressive" ? "expressi
           </section>
         )}
       </aside>
+      <section class="article-cta" aria-label="订阅更新">
+        <div>
+          <p class="eyebrow">Keep reading</p>
+          <h2>订阅后续更新</h2>
+          <p>用 RSS 跟进新文章，或者到 GitHub 查看主题源码。</p>
+        </div>
+        <div>
+          <a class="button primary" href="/rss.xml">RSS 订阅</a>
+          <a class="button secondary" href={githubUrl} target="_blank" rel="noreferrer">GitHub</a>
+        </div>
+      </section>
     </div>
-    <section class="article-cta" aria-label="订阅更新">
-      <div>
-        <p class="eyebrow">Keep reading</p>
-        <h2>订阅后续更新</h2>
-        <p>用 RSS 跟进新文章，或者到 GitHub 查看主题源码。</p>
-      </div>
-      <div>
-        <a class="button primary" href="/rss.xml">RSS 订阅</a>
-        <a class="button secondary" href={githubUrl} target="_blank" rel="noreferrer">GitHub</a>
-      </div>
-    </section>
     {(prevPost || nextPost) && (
       <nav class="series-nav" aria-label="同系列文章">
         <a class="series-nav-title" href={getBlogFilterUrl({ series: post.series })}>{post.series}</a>
