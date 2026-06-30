@@ -11,6 +11,7 @@ const ATTACHMENTS_DIRS = (process.env.WECHAT_ATTACHMENTS_DIRS || "")
 const TARGET_DIR = path.resolve("src/content/posts");
 const IMAGE_TARGET_DIR = path.resolve("public/article-images");
 const EXCLUDED_POSTS = new Set(["公众号写作风格卡", "待写选题池", "00-公众号索引", "公众号内容索引"]);
+const SHOULD_PRUNE = process.env.WECHAT_PRUNE === "1";
 
 const topicMap = new Map([
   ["Codex", "Codex"],
@@ -175,6 +176,8 @@ async function sync() {
   const sourceFiles = await walk(SOURCE_DIR);
   let count = 0;
   let skipped = 0;
+  let pruned = 0;
+  const syncedFiles = new Set();
   const missingImages = new Set();
 
   for (const sourceFile of sourceFiles) {
@@ -209,11 +212,24 @@ async function sync() {
 
     const output = matter.stringify(content, data);
     await fs.writeFile(targetFile, output.endsWith("\n") ? output : `${output}\n`);
+    syncedFiles.add(targetFile);
     count += 1;
+  }
+
+  if (SHOULD_PRUNE) {
+    for (const targetFile of await walk(TARGET_DIR)) {
+      if (syncedFiles.has(targetFile)) continue;
+      const parsed = matter(await fs.readFile(targetFile, "utf8"));
+      if (parsed.data.wechat) {
+        await fs.rm(targetFile);
+        pruned += 1;
+      }
+    }
   }
 
   console.log(`Synced ${count} Markdown files to ${TARGET_DIR}`);
   if (skipped > 0) console.log(`Skipped ${skipped} excluded Markdown files`);
+  if (pruned > 0) console.log(`Pruned ${pruned} stale Markdown files`);
   if (missingImages.size > 0) {
     console.warn(`Missing ${missingImages.size} referenced image(s):`);
     for (const image of missingImages) console.warn(`- ${image}`);
