@@ -9,6 +9,8 @@
 
 Yunbo 是一个安静、轻量的 Astro 博客主题，适合长期写作、文章归档、专题整理、本地搜索、RSS 和静态部署。
 
+博客预览：[https://blog.leebooe.xyz/](https://blog.leebooe.xyz/)
+
 Yunbo 取自「云」与「泊」的意象：想法像云一样聚合，最终以文章的形式停泊下来。
 
 ## 功能
