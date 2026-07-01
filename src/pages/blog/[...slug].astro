@@ -1,4 +1,5 @@
 ---
+import { Icon } from "astro-icon/components";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { formatDate, getAllPosts, getBlogFilterUrl } from "@/lib/posts";
 
@@ -98,10 +99,7 @@ const codeBlockMode = process.env.YUNBO_CODE_BLOCKS === "expressive" ? "expressi
       </nav>
     )}
     <button class="back-to-top" type="button" data-back-to-top aria-label="阅读进度，回到顶部">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 19V5" />
-        <path d="m5 12 7-7 7 7" />
-      </svg>
+      <Icon name="lucide:arrow-up" aria-hidden="true" />
       <span data-read-progress-label>0%</span>
     </button>
     <script id="recent-post-data" type="application/json" set:html={JSON.stringify({

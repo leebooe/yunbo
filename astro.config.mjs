@@ -1,6 +1,7 @@
 import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import expressiveCode from "astro-expressive-code";
+import icon from "astro-icon";
 
 const codeBlockMode = process.env.YUNBO_CODE_BLOCKS === "expressive" ? "expressive" : "legacy";
 const expressiveCodeIntegration = expressiveCode({
@@ -19,6 +20,12 @@ const expressiveCodeIntegration = expressiveCode({
 export default defineConfig({
   site: process.env.PUBLIC_SITE_URL || "https://yunbo.example.com",
   integrations: [
+    icon({
+      include: {
+        lucide: ["archive", "arrow-up", "chevron-down", "file-text", "folder", "house", "monitor", "moon", "rotate-ccw", "rss", "sliders-horizontal", "sun"],
+        "simple-icons": ["github"]
+      }
+    }),
     ...(codeBlockMode === "expressive" ? [expressiveCodeIntegration] : []),
     sitemap()
   ],

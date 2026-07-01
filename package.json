@@ -14,8 +14,11 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "latest",
+    "@iconify-json/lucide": "^1.2.115",
+    "@iconify-json/simple-icons": "^1.2.88",
     "astro": "latest",
     "astro-expressive-code": "^0.44.0",
+    "astro-icon": "^1.1.5",
     "gray-matter": "latest",
     "reading-time": "latest"
   },

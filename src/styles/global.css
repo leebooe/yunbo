@@ -3302,6 +3302,7 @@ a.heatmap-cell:hover {
   width: 18px;
   height: 18px;
   fill: currentColor;
+  stroke: none;
 }
 
 @media (max-width: 920px) {

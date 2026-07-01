@@ -1,4 +1,5 @@
 ---
+import { Icon } from "astro-icon/components";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import PostCard from "@/components/PostCard.astro";
 import { getAllPosts, getTopics } from "@/lib/posts";
@@ -34,9 +35,7 @@ const filterData = posts.map((post) => ({
         </div>
         <button class="filter-toggle" type="button" data-filter-toggle aria-expanded="false" aria-controls="blog-filter-panel">
           <span data-filter-toggle-label>展开</span>
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="m6 9 6 6 6-6" />
-          </svg>
+          <Icon name="lucide:chevron-down" aria-hidden="true" />
         </button>
       </div>
       <div class="filter-panel" id="blog-filter-panel" data-filter-panel>
@@ -81,10 +80,7 @@ const filterData = posts.map((post) => ({
     </div>
     <p class="filter-empty" data-filter-empty hidden>没有匹配文章。</p>
     <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 19V5" />
-        <path d="m5 12 7-7 7 7" />
-      </svg>
+      <Icon name="lucide:arrow-up" aria-hidden="true" />
       <span>顶部</span>
     </button>
     <script id="blog-filter-data" type="application/json" set:html={JSON.stringify(filterData)}></script>
