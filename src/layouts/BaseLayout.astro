@@ -64,7 +64,11 @@ const getSettingOptionData = (control: string | undefined, value: string) => ({
     </script>
   </head>
   <body>
+    <div class="page-loading" data-page-loading aria-hidden="true">
+      <span>Loading</span>
+    </div>
     <header class="site-header">
+      <div class="page-loading-bar" data-page-loading-bar aria-hidden="true"></div>
       <nav class="container nav" aria-label="主导航">
         <a class="brand" href="/" aria-label="Yunbo 首页">
           <span>Yun</span>
@@ -248,6 +252,32 @@ const getSettingOptionData = (control: string | undefined, value: string) => ({
       } catch {
         setAccentHue(defaultAccentHue, false);
       }
+
+      const pageLoading = document.querySelector("[data-page-loading]");
+      const showPageLoading = () => {
+        pageLoading?.classList.add("is-visible");
+      };
+      const isPlainLeftClick = (event) => event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
+      const shouldLoadLink = (link, event) => {
+        if (!isPlainLeftClick(event) || link.target || link.hasAttribute("download")) return false;
+        const url = new URL(link.href, window.location.href);
+        if (url.origin !== window.location.origin) return false;
+        return url.pathname !== window.location.pathname || url.search !== window.location.search;
+      };
+
+      document.addEventListener("click", (event) => {
+        const link = event.target.closest?.("a[href]");
+        if (!link || !shouldLoadLink(link, event)) return;
+        if (!event.defaultPrevented) showPageLoading();
+      });
+
+      document.addEventListener("submit", (event) => {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement) || form.target) return;
+        const url = new URL(form.action || window.location.href, window.location.href);
+        if (url.origin !== window.location.origin) return;
+        if (!event.defaultPrevented) showPageLoading();
+      });
     </script>
   </body>
 </html>
